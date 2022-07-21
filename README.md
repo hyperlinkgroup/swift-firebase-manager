@@ -1,1 +1,3 @@
-# swift-firebase-manager
+# FirebaseManager
+
+A description of this package.
