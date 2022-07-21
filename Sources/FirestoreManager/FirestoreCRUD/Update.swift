@@ -11,14 +11,15 @@ import FirebaseFirestore
 extension FirestoreManager {
     /**
      Update a document in Firebase.
+     - Attention: The document is overwritten or newly created if it didn't exist before
      
      - Parameter object: Codable object to be uploaded
-     - Parameter reference: The collection name
      - Parameter id: ID to be set for the document
+     - Parameter reference: The collection name
      */
     public static func updateDocument<T>(_ object: T,
+                                         id: String,
                                          reference: ReferenceProtocol,
-                                         with id: String,
                                          completion: @escaping(Result<String, FirestoreError>) -> Void) where T: Encodable {
         
         do {
@@ -29,22 +30,21 @@ extension FirestoreManager {
         }
     }
     
-    public static func batchWrite<T>(_ data: [T], reference: ReferenceProtocol, parentId: String? = nil, completion: @escaping(FirestoreError?) -> Void) where T: Encodable {
-        let batch = database.batch()
-        data.forEach { element in
-            
-            if let encodedElement = try? Firestore.Encoder().encode(element) {
-                // automatically generate unique id
-                let docRef = reference.reference(parentId: parentId).document()
-                batch.setData(encodedElement, forDocument: docRef)
-            }
-        }
+    /**
+     Update specific values of a document in Firebase.
+     - Attention: values are updated or newly created if they didn't exist before
+     
+     - Parameter id: ID to be set for the document
+     - Parameter reference: The collection name
+     - Parameter newValues: Array of keys and values for all values to be updated
+     */
+    public static func updateData(id: String, reference: ReferenceProtocol, newValues: [String: Any], completion: @escaping(Result<String, FirestoreError>) -> Void) {
         
-        batch.commit { error in
+        reference.reference().document(id).setData(newValues, merge: true) { error in
             if let error = error {
-                completion(.update(error: error))
+                completion(.failure(.update(error: error)))
             } else {
-                completion(nil)
+                completion(.success(id))
             }
         }
     }

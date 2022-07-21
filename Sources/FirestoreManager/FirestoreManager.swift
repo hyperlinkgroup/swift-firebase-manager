@@ -11,4 +11,10 @@ import FirebaseFirestoreSwift
 
 open class FirestoreManager {
     static let database = Firestore.firestore()
+    
+    static var snapshotListeners = [String: ListenerRegistration]()
+    
+    public static func removeSnapshotListener(_ documentId: String) {
+        snapshotListeners[documentId]?.remove()
+    }
 }

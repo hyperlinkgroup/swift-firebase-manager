@@ -10,22 +10,22 @@ import FirebaseFirestore
 
 extension FirestoreManager {
     /**
-     Fetch and listen to a collection from Firebase.
+     Fetch a collection from Firebase.
      
      - Parameter reference: The collection name
-     - Parameter userFilter: Filter all objects by the current user's id
      - Parameter filters: Dictionary of the filter key and the value
      - Parameter orderBy: Key to order objects by
-     - Parameter descending: Whether orderBy key should descend
+     - Parameter descending: Whether orderBy key should descend. Default is false
      - Parameter limit: Limit number of fetched items
+     - Parameter withListener: Whether a listener should be added to register any changes made to the collection. Default is true
      */
     public static func fetchCollection<T>(_ reference: ReferenceProtocol,
-                                   userFilter: Bool = true,
-                                   filters: [String: Any]? = nil,
-                                   orderBy: [String]? = nil,
-                                   descending: Bool = false,
-                                   limit: Int? = nil,
-                                   completion: @escaping (Result<[T], FirestoreError>) -> Void) where T: Decodable {
+                                          filters: [String: Any]? = nil,
+                                          orderBy: [String]? = nil,
+                                          descending: Bool = false,
+                                          limit: Int? = nil,
+                                          withListener: Bool = true,
+                                          completion: @escaping (Result<[T], FirestoreError>) -> Void) where T: Decodable {
         
         
         var query: Query = reference.reference()
@@ -42,9 +42,14 @@ extension FirestoreManager {
             query = query.limit(to: limit)
         }
         
-        query.addSnapshotListener { querySnapshot, error in
+        let snapshotBlock = { (querySnapshot: QuerySnapshot?, error: Error?) in
+            if let error = error {
+                completion(.failure(.fetch(error: error)))
+                return
+            }
+            
             guard let documents = querySnapshot?.documents else {
-                completion(.failure(.documentNotFound(error: error)))
+                completion(.failure(.documentNotFound))
                 return
             }
             do {
@@ -57,24 +62,35 @@ extension FirestoreManager {
                 completion(.failure(.decoding(error: error)))
             }
         }
+        
+        if withListener {
+            let listener = query.addSnapshotListener(snapshotBlock)
+            self.snapshotListeners[reference.rawValue] =  listener
+        } else {
+            query.getDocuments(completion: snapshotBlock)
+        }
     }
     
    
     /**
-     Fetch and listen to a single document in Firebase.
+     Fetch a single document in Firebase.
      
-     - Parameter reference: The parent's collection name
      - Parameter id: ID of the document
+     - Parameter reference: The parent's collection name
+     - Parameter withListener: Whether a listener should be added to register any changes made to the collection. Default is true
      */
-    public static func fetchDocument<T>(_ reference: ReferenceProtocol,
-                                 id: String,
-                                 completion: @escaping (Result<T, FirestoreError>) -> Void) where T: Decodable {
+    public static func fetchDocument<T>(id: String, reference: ReferenceProtocol, withListener: Bool = true, completion: @escaping (Result<T, FirestoreError>) -> Void) where T: Decodable {
         
-        let reference = reference.reference().document(id)
+        let documentReference = reference.reference().document(id)
         
         let snapshotBlock = { (document: DocumentSnapshot?, error: Error?) in
+            if let error = error {
+                completion(.failure(.fetch(error: error)))
+                return
+            }
+            
             guard let document = document, document.exists else {
-                completion(.failure(.documentNotFound(error: error)))
+                completion(.failure(.documentNotFound))
                 return
             }
             do {
@@ -85,6 +101,29 @@ extension FirestoreManager {
             }
         }
         
-        reference.addSnapshotListener(snapshotBlock)
+        if withListener {
+            let listener = documentReference.addSnapshotListener(snapshotBlock)
+            self.snapshotListeners[reference.rawValue] = listener
+        } else {
+            documentReference.getDocument(completion: snapshotBlock)
+        }
+    }
+    
+    /**
+     Get the number of documents in a collection.
+     
+     - Parameter reference: The parent's collection name
+     - Parameter whereTuple: Optional Key-Value-Pair for condition
+     */
+    public static func fetchCollectionCount(_ reference: ReferenceProtocol, whereTuple: (String, Any)? = nil, completion: @escaping (Int) -> Void) {
+        var query: Query = reference.reference()
+        
+        if let whereTuple = whereTuple {
+            query = query.whereField(whereTuple.0, isEqualTo: whereTuple.1)
+        }
+        
+        query.getDocuments { querySnapshot, _ in
+            completion(querySnapshot?.documents.count ?? 0)
+        }
     }
 }

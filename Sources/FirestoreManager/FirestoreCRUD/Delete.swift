@@ -11,10 +11,10 @@ extension FirestoreManager {
     /**
      Delete a document in Firebase.
      
-     - Parameter reference: The collection name
      - Parameter id: ID to be set for the document
+     - Parameter reference: The collection name
      */
-    public static func deleteDocument(reference: ReferenceProtocol, with id: String, completion: ((FirestoreError?) -> Void)? = nil) {
+    public static func deleteDocument(id: String, reference: ReferenceProtocol, completion: ((FirestoreError?) -> Void)? = nil) {
         reference.reference().document(id).delete { error in
             if let error = error {
                 completion?(FirestoreError.delete(error: error))
