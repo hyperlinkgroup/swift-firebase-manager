@@ -13,7 +13,6 @@ let package = Package(
         .library(
             name: "FirebaseManagerPackage",
             targets: [
-                "FirebaseAuthenticationManager", // depends on FirestoreManager
                 "FirebaseStorageManager"
             ])
     ],
@@ -35,14 +34,6 @@ let package = Package(
                 .product(name: "FirebaseStorage", package: "firebase-ios-sdk")
             ],
             path: "Sources/StorageManager"
-        ),
-        .target(
-            name: "FirebaseAuthenticationManager",
-            dependencies: [
-                .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
-                "FirebaseFirestoreManager"
-            ],
-            path: "Sources/AuthenticationManager"
         )
     ]
 )
