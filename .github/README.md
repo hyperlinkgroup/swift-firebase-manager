@@ -40,20 +40,36 @@ Target for all transactions with the Firebase Cloud Firestore.
 ##### Status
 - [x] CRUD-Transactions for collections and documents
 - [x] Error Handling
-- [ ] Support for nested collections
-- [ ] Snapshot Listeners
+- [x] Support for nested collections
+- [x] Snapshot Listeners
 
 
-In the first step you need to define your collections by implementing the ReferenceProtocol.
-
+In the first step you need to define your collections by implementing the ReferenceProtocol. In case of nested collections, you need to pass the top-level document Id as associated value.
 Example definition for two top-level collections (countries, notes), where every country-document has a cities-collection associated:
 ```Swift
 import FirebaseFirestoreManager
 
-enum FirestoreReference: String, ReferenceProtocol {
-    case country = "countries", city = "cities", notes
+enum FirestoreReference: ReferenceProtocol {
+    case country, city(countryId: String), notes
+    
+    var rawValue: String {
+        switch self {
+        case .country: return "countries"
+        case .city: return "cities"
+        case .notes: return "notes"
+        }
+    }
+    
+    var parent: ParentReference? {
+        switch self {
+        case .city(let countryId):
+            return ParentReference(reference: FirestoreReference.country, id: countryId)
+        case .country, .notes: return nil
+        }
+    }
 }
 ```
+
 Next you need to define all your model classes, conforming to Codable-protocol.
 
 Example:
@@ -62,14 +78,12 @@ public struct City: Codable {
 
     let name: String
     let state: String?
-    let country: String?
     let isCapital: Bool?
     let population: Int64?
 
     enum CodingKeys: String, CodingKey {
         case name
         case state
-        case country
         case isCapital = "capital"
         case population
     }
@@ -90,6 +104,16 @@ FirestoreManager.fetchCollection(FirestoreReference.country) { (result: Result<[
     switch result {
     case .success(let countries):
         print(countries)
+    case .failure(let error):
+        print(error.localizedDescription)
+    }
+}
+
+// Read specific city-document
+FirestoreManager.fetchDocument(id: "LA", reference: FirestoreReference.city(countryId: "USA")) { (result: Result<City, FirestoreError>) in
+    switch result {
+    case .success(let city):
+        print(city)
     case .failure(let error):
         print(error.localizedDescription)
     }
