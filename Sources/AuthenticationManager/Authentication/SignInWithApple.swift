@@ -15,11 +15,10 @@ extension AuthenticationManager {
      - Parameter scopes: Required user data (full name and/or email)
      */
     public static func handleAuthorizationRequest(_ request: ASAuthorizationAppleIDRequest, scopes: [ASAuthorization.Scope] = [.fullName, .email]) {
-        let nonce = randomNonceString()
-        currentNonce = nonce
+        currentNonce = Nonce()
         
         request.requestedScopes = scopes
-        request.nonce = sha256(nonce)
+        request.nonce = currentNonce.sha256()
     }
     
     /**
