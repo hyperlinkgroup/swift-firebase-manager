@@ -13,14 +13,12 @@ extension FirestoreManager {
      Fetch and listen to a collection from Firebase.
      
      - Parameter reference: The collection name
-     - Parameter userFilter: Filter all objects by the current user's id
      - Parameter filters: Dictionary of the filter key and the value
      - Parameter orderBy: Key to order objects by
      - Parameter descending: Whether orderBy key should descend
      - Parameter limit: Limit number of fetched items
      */
     public static func fetchCollection<T>(_ reference: ReferenceProtocol,
-                                   userFilter: Bool = true,
                                    filters: [String: Any]? = nil,
                                    orderBy: [String]? = nil,
                                    descending: Bool = false,

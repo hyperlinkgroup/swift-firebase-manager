@@ -24,9 +24,8 @@ open class FirebaseStorageManager {
             }
             
             taskReference.observe(.progress) { snapshot in
-                guard let progress = snapshot.progress?.fractionCompleted
+                guard let progress = snapshot.progress?.fractionCompleted else { return }
                 
-                else { return }
                 print("File-Upload completed \(progress)%")
             }
         }.eraseToAnyPublisher()
@@ -48,8 +47,7 @@ open class FirebaseStorageManager {
                         return
                     }
                     
-                    guard let url = url
-                    else {
+                    guard let url = url else {
                         promise(.failure(.download(error: StorageError.urlMissing)))
                         return
                     }
