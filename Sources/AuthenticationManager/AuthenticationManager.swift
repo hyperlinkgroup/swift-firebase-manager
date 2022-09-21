@@ -5,18 +5,23 @@
 //  Created by Kevin Waltz on 22.04.22.
 //
 
-import SwiftUI
 import FirebaseAuth
 
-open class AuthenticationManager {
+open class AuthenticationManager: NSObject {
+    static let auth = Auth.auth()
     static let providerId = "apple.com"
-    static let authorizationIdKey = "appleAuthorizedUserIdKey"
+    
+    static var authView: AuthenticationView?
+    
+    enum UserDefaultsKeys: String {
+        case authorizationIdKey, userNameKey, emailKey
+    }
     
     static var currentNonce = Nonce()
     
     
     public static var currentUser: User? {
-        Auth.auth().currentUser
+        auth.currentUser
     }
     // authentication completed (anonymously or with account)
     // Attention: should never be false after onboarding, since we cannot persist any data without a user
@@ -35,7 +40,7 @@ open class AuthenticationManager {
         !(currentUser?.isAnonymous ?? true)
     }
     
-    
+        
     
     
     // TODO
@@ -50,5 +55,18 @@ open class AuthenticationManager {
         // set auth
         #endif
         
+    }
+    
+    
+    public static func authenticateAnonymously(completion: @escaping(Error?) -> Void) {
+        guard !hasUser else {
+            // user is already authenticated
+            completion(nil)
+            return
+        }
+        
+        auth.signInAnonymously { _, error in
+            completion(error)
+        }
     }
 }

@@ -11,12 +11,12 @@ import AuthenticationServices
 extension AuthenticationManager {
     // identifier from apple credentials - used for checking authorization state after login
     public static var authorizationKey: String? {
-        get { UserDefaults.standard.string(forKey: authorizationIdKey) }
-        set { UserDefaults.standard.set(newValue, forKey: authorizationIdKey) }
+        get { UserDefaults.standard.string(forKey: UserDefaultsKeys.authorizationIdKey.rawValue) }
+        set { UserDefaults.standard.set(newValue, forKey: UserDefaultsKeys.authorizationIdKey.rawValue) }
     }
     
     public static func removeAuthorizationKey() {
-        UserDefaults.standard.set(nil, forKey: authorizationIdKey)
+        UserDefaults.standard.set(nil, forKey: UserDefaultsKeys.authorizationIdKey.rawValue)
     }
     
     
@@ -25,8 +25,8 @@ extension AuthenticationManager {
      
      This cannot be used to ask for permission. It is solely to check for the permission status.
      */
-    static func checkAuthorizationState(completion: @escaping (Result<Void, AuthorizationError>) -> Void) {
-        guard let authorizationKey = authorizationKey else {
+    static func checkAuthorizationState(completion: @escaping (Result<Any?, AuthorizationError>) -> Void) {
+        guard let authorizationKey = authorizationKey, !authorizationKey.isEmpty else {
             completion(.failure(.credentialState(description: "Missing Key from User Defaults", error: nil)))
             return
         }
@@ -34,26 +34,45 @@ extension AuthenticationManager {
         ASAuthorizationAppleIDProvider().getCredentialState(forUserID: authorizationKey) { credentialState, error in
             switch credentialState {
             case .authorized:
-                completion(.success)
+                completion(.success(nil))
             default:
                 completion(.failure(.credentialState(description: credentialState.description, error: error)))
             }
         }
     }
-}
-
-enum AuthorizationError: LocalizedError {
-    case credentialState(description: String, error: Error?)
-}
-
-extension ASAuthorizationAppleIDProvider.CredentialState {
-    var description: String {
-        switch self {
-        case .revoked: return "The user’s authorization has been revoked and they should be signed out."
-        case .authorized: return "The user is authorized."
-        case .notFound: return "The user hasn’t established a relationship with Sign in with Apple."
-        case .transferred: return "The app has been transferred to a different team, and the user’s identifier needs to be migrated."
-        @unknown default: return "Unknown CredentialState"
+    
+    
+    
+    /**
+     Sign out from Firebase on the device and remove the authorization key for sign in with Apple.
+     */
+    public static func signOut(completion: @escaping (Error?) -> Void) {
+        guard let providerId = auth.currentUser?.providerData.first?.providerID,
+           providerId == providerId
+        else {
+            completion(AuthorizationError.providerId)
+            return
+        }
+        
+        do {
+            try auth.signOut()
+            removeAuthorizationKey()
+            completion(nil)
+        } catch let signOutError {
+            handleError(signOutError, completion: completion)
+        }
+    }
+    
+    public static func deleteAccount(completion: @escaping(Error?) -> Void) {
+        guard let currentUser = auth.currentUser else { completion(nil); return }
+        reauthenticateUser()
+        
+        currentUser.delete { error in
+            if let error = error {
+                handleError(error, completion: completion)
+            } else {
+                completion(nil)
+            }
         }
     }
 }

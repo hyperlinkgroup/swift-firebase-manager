@@ -27,7 +27,7 @@ public struct ParentReference {
     public var id: String
     
     public init?(reference: ReferenceProtocol, id: String?) {
-        guard let id = id else { return nil }
+        guard let id = id else { return nil }
         self.reference = reference
         self.id = id
     }
