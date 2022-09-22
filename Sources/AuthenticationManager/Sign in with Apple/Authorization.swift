@@ -21,7 +21,7 @@ extension AuthenticationManager {
     
     
     /**
-     Check whether the user authorized the app to send push notifications.
+     Check whether the user authorized the app to use SignInWithApple.
      
      This cannot be used to ask for permission. It is solely to check for the permission status.
      */
@@ -43,36 +43,5 @@ extension AuthenticationManager {
     
     
     
-    /**
-     Sign out from Firebase on the device and remove the authorization key for sign in with Apple.
-     */
-    public static func signOut(completion: @escaping (Error?) -> Void) {
-        guard let providerId = auth.currentUser?.providerData.first?.providerID,
-           providerId == providerId
-        else {
-            completion(AuthorizationError.providerId)
-            return
-        }
-        
-        do {
-            try auth.signOut()
-            removeAuthorizationKey()
-            completion(nil)
-        } catch let signOutError {
-            handleError(signOutError, completion: completion)
-        }
-    }
     
-    public static func deleteAccount(completion: @escaping(Error?) -> Void) {
-        guard let currentUser = auth.currentUser else { completion(nil); return }
-        reauthenticateUser()
-        
-        currentUser.delete { error in
-            if let error = error {
-                handleError(error, completion: completion)
-            } else {
-                completion(nil)
-            }
-        }
-    }
 }

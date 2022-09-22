@@ -36,13 +36,16 @@ extension AuthenticationManager {
         checkAuthorizationResult(authResult) { result in
             switch result {
             case .success(let credential):
-                updateUserInfo(credential: credential, repository: nil, completion: completion)
+                updateUserInfo(credential: credential, completion: completion)
             case .failure(let error):
                 self.handleError(error, completion: completion)
             }
         }
     }
     
+    /**
+     Checks that the result contains the requested AppleID-Credential and uses it for Authentication
+     */
     private static func checkAuthorizationResult(_ result: Result<ASAuthorization, Error>, completion: @escaping (Result<ASAuthorizationAppleIDCredential, Error>) -> Void) {
         
         switch result {
@@ -52,13 +55,13 @@ extension AuthenticationManager {
                 completion(.failure(AuthorizationError.credential(description: "Did not receive an AppleIDCredential, but \(type(of: authorization.credential))")))
                 return
             }
-            authenticateByAppleId(credential: appleIDCredential, completion: completion)
+            authenticateWithCredential(credential: appleIDCredential, completion: completion)
         case .failure(let error):
             completion(.failure(AuthorizationError.credential(error: error)))
         }
     }
     
-    private static func authenticateByAppleId(credential appleCredential: ASAuthorizationAppleIDCredential, completion: @escaping (Result<ASAuthorizationAppleIDCredential, Error>) -> Void) {
+    private static func authenticateWithCredential(credential appleCredential: ASAuthorizationAppleIDCredential, completion: @escaping (Result<ASAuthorizationAppleIDCredential, Error>) -> Void) {
         self.authorizationKey = appleCredential.user
         
         guard let identityToken = appleCredential.identityToken,
@@ -77,9 +80,12 @@ extension AuthenticationManager {
             completion(result.map {_ in appleCredential})
         }
     }
-    
-    static func authenticate(credential: AuthCredential, completion: @escaping (Result<Bool, Error>) -> Void) {
-        // depending on current authentication state, the user is signed in, refreshed or linked
+
+    /**
+     Depending on current authentication state, the user is signed in, refreshed or linked
+     */
+    private static func authenticate(credential: AuthCredential, completion: @escaping (Result<Bool, Error>) -> Void) {
+        
         if let currentUser = currentUser {
             if !userIsAuthenticated {
                 // anonymous account is linked to new created one
@@ -91,6 +97,7 @@ extension AuthenticationManager {
             auth.signIn(with: credential, completion: handleResult)
         }
         
+        // inner function since results from different auth-functions are same
         func handleResult(authResult: AuthDataResult?, error: Error?) {
             if authResult?.user != nil {
                 completion(.success(true))
@@ -101,10 +108,10 @@ extension AuthenticationManager {
     }
     
     /**
-     Save the received user information from sign in with Apple to Firebase.
+     Save the received user information from Sign in with Apple to Firebase.
      If the user authenticated on this device already, the requested infos are not in the scope, so we need to take care, that already existing values are not overwritten by empty values
      */
-    static func updateUserInfo(credential: ASAuthorizationAppleIDCredential, repository: UserRepositoryProtocol?, completion: @escaping (Error?) -> Void) {
+    static func updateUserInfo(credential: ASAuthorizationAppleIDCredential, completion: @escaping (Error?) -> Void) {
         if let email = credential.email {
             UserDefaults.standard.set(email, forKey: UserDefaultsKeys.emailKey.rawValue)
         }
@@ -128,34 +135,11 @@ extension AuthenticationManager {
                 // TODO: This is an error that should only passed as a warning for the Dev for logging.
             }
             
-            if let repository = repository, let email = credential.email {
+            if let repository = self.configuration.userRepository, let email = credential.email {
                 repository.saveUser(name: displayName, email: email, completion: completion)
             } else {
                 completion(nil)
             }
         }
     }
-}
-
-
-extension AuthenticationManager: AuthDelegate {
-    /**
-     Security-sensitive actions (deleting account for now, later may be password change or mail-adress-change) require that the user has recently signed in and we catch at this point the "requiresRecentLogin"-Error.
-     When a re-authentication is needed, we need to ask the user again for the credentials.
-     */
-    public static func reauthenticateUser() {
-#if canImport(UIKit)
-            self.authView = AuthenticationView(delegate: nil)
-            self.authView?.authenticateBySignInWithApple()
-        //        view?.authenticateBySignInWithApple(delegate: nil)
-#endif
-        // TODO: SwiftUI
-    }
-    
-    
-    public func authenticationCompleted(error: Error?) {
-        print(error?.localizedDescription ?? "SUCCESS")
-    }
-    
-    
 }
