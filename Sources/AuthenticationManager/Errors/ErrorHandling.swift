@@ -9,9 +9,9 @@ import Foundation
 import FirebaseAuth
 
 extension AuthenticationManager {
-    static func handleError(_ error: Error, completion: @escaping((Error?) -> ())) {
-        guard let error = error as NSError? else {
-            finishedHandling(state: true)
+    static func handleError(_ rawError: Error, completion: @escaping((Error?) -> ())) {
+        guard let error = rawError as NSError? else {
+            finishedHandling()
             return
         }
         
@@ -20,7 +20,7 @@ extension AuthenticationManager {
             // user wants to execute a security-sensitive action and needs to reauthenticate before
             
             // completion is called, so that caller can register notification to receive updates on reauthentication
-            finishedHandling(state: false)
+            finishedHandling()
             
             reauthenticateUser()
             return
@@ -42,12 +42,12 @@ extension AuthenticationManager {
         default:
             // Crashlytics.crashlytics().record(error: error)
             print(error.localizedDescription)
-            finishedHandling(state: false)
+            finishedHandling()
         }
         
         // If we have a completion, we execute it. Otherwise we use the delegate
-        func finishedHandling(state: Bool) {
-            completion(state ? nil : AuthorizationError.unknown)
+        func finishedHandling() {
+            completion(rawError)
         }
     }
 }

@@ -13,6 +13,10 @@ public protocol UserRepositoryProtocol {
 }
 
 extension UserRepositoryProtocol {
+    public var userId: String? {
+        AuthenticationManager.userId
+    }
+    
     public func checkAuthorization() {
         AuthenticationManager.checkAuthorizationState { result in
             switch result {
@@ -39,9 +43,5 @@ extension UserRepositoryProtocol {
         } else {
             AuthenticationManager.authenticateAnonymously(completion: completion)
         }
-    }
-    
-    public var userId: String? {
-        AuthenticationManager.userId
     }
 }

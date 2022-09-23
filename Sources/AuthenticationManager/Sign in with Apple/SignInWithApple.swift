@@ -84,7 +84,7 @@ extension AuthenticationManager {
     /**
      Depending on current authentication state, the user is signed in, refreshed or linked
      */
-    private static func authenticate(credential: AuthCredential, completion: @escaping (Result<Bool, Error>) -> Void) {
+    static func authenticate(credential: AuthCredential, completion: @escaping (Result<Bool, Error>) -> Void) {
         
         if let currentUser = currentUser {
             if !userIsAuthenticated {
@@ -103,7 +103,7 @@ extension AuthenticationManager {
                 completion(.success(true))
                 return
             }
-            completion(.failure(AuthorizationError.firebase(error: error)))
+            completion(.failure(AuthenticationError.firebase(error: error)))
         }
     }
     
@@ -113,7 +113,7 @@ extension AuthenticationManager {
      */
     static func updateUserInfo(credential: ASAuthorizationAppleIDCredential, completion: @escaping (Error?) -> Void) {
         if let email = credential.email {
-            UserDefaults.standard.set(email, forKey: UserDefaultsKeys.emailKey.rawValue)
+            self.email = email
         }
         
         
@@ -127,7 +127,7 @@ extension AuthenticationManager {
               let changeRequest = currentUser?.createProfileChangeRequest()
             else { completion(nil); return }
         
-        UserDefaults.standard.set(displayName, forKey: UserDefaultsKeys.userNameKey.rawValue)
+        self.userName = displayName
         
         changeRequest.displayName = displayName
         changeRequest.commitChanges { error in

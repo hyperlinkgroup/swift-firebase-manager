@@ -40,8 +40,4 @@ extension AuthenticationManager {
             }
         }
     }
-    
-    
-    
-    
 }

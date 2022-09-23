@@ -44,7 +44,7 @@ extension AuthenticationView: ASAuthorizationControllerDelegate {
     
     public func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
         AuthenticationManager.handleAuthorizationResult(.failure(error)) { result in
-            self.delegate?.authenticationCompleted(error: error)
+            self.delegate?.authenticationCompleted(error: result ?? error)
         }
     }
 }

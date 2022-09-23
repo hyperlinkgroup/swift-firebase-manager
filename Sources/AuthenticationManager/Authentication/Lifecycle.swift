@@ -35,6 +35,8 @@ extension AuthenticationManager {
         guard let currentUser = auth.currentUser else { completion(nil); return }
         reauthenticateUser()
         
+        // TODO: We don't get a callback from reauthenticate. Need to check whether this is necessary to continue, or if simply the deletion fails and we can try again afterwards
+        
         currentUser.delete { error in
             if let error = error {
                 handleError(error, completion: completion)
