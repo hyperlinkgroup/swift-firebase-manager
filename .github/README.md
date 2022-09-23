@@ -1,7 +1,9 @@
 # FirebaseManager Package
 
 This repository contains all utility functions that simplify transactions with Firebase products like Cloud Firestore, Cloud Storage or Authentication, wrapped in a Swift Package.
+
 It is made by **[SPACE SQUAD](https://www.spacesquad.de)**! We make great software with ♥️ in Berlin.
+
 <img src="assets/README-spacesquad_logo_full.png" width="120">
 
 ---
@@ -21,7 +23,7 @@ It is made by **[SPACE SQUAD](https://www.spacesquad.de)**! We make great softwa
 
 ## Installation
 ##### Requirements
-- iOS 14.0+ / macOS 10.15
+- iOS 14.0+ / macOS 10.14+
 - Xcode 13+
 - Swift 5+
 
@@ -103,6 +105,7 @@ FirestoreManager.createDocument(country, reference: FirestoreReference.country) 
 FirestoreManager.fetchCollection(FirestoreReference.country) { (result: Result<[Country], FirestoreError>) in
     switch result {
     case .success(let countries):
+        // Here you can use the fetched countries!
         print(countries)
     case .failure(let error):
         print(error.localizedDescription)

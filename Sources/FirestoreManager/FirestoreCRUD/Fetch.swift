@@ -20,12 +20,11 @@ extension FirestoreManager {
      - Parameter withListener: Whether a listener should be added to register any changes made to the collection. Default is true
      */
     public static func fetchCollection<T>(_ reference: ReferenceProtocol,
-                                          filters: [String: Any]? = nil,
-                                          orderBy: [String]? = nil,
-                                          descending: Bool = false,
-                                          limit: Int? = nil,
-                                          withListener: Bool = true,
-                                          completion: @escaping (Result<[T], FirestoreError>) -> Void) where T: Decodable {
+                                   filters: [String: Any]? = nil,
+                                   orderBy: [String]? = nil,
+                                   descending: Bool = false,
+                                   limit: Int? = nil,
+                                   completion: @escaping (Result<[T], FirestoreError>) -> Void) where T: Decodable {
         
         
         var query: Query = reference.reference()
