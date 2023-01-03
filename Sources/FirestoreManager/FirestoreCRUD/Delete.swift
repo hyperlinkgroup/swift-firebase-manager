@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import FirebaseFirestore
 
 extension FirestoreManager {
     /**
@@ -22,5 +23,22 @@ extension FirestoreManager {
                 completion?(nil)
             }
         }
+    }
+    
+    /**
+     Delete a field of an object.
+     
+     - Parameter id:
+     */
+    
+    public static func deleteField(id: String, reference: ReferenceProtocol, field: String, completion: @escaping((FirestoreError?) -> Void)) {
+        reference.reference().document(id)
+            .updateData([field: FieldValue.delete()]) { error in
+                var firestoreError: FirestoreError?
+                if let error {
+                    firestoreError = .fail(error: error, action: .update, reference: reference, id: id)
+                }
+                completion(firestoreError)
+            }
     }
 }
