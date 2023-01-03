@@ -10,7 +10,7 @@ import Foundation
 
 public protocol ObjectRepositoryProtocol: AnyObject {
     func delete() -> Future<Bool, Error>
-    func rename(_ newName: String) -> Future<Bool, Error>
+    func rename(_ newName: String, key: String) -> Future<Bool, Error>
     func didReceiveError(_ error: Error)
 }
 
@@ -31,7 +31,6 @@ open class ObjectRepository<T: Codable>: ObservableObject, ObjectRepositoryProto
     // MARK: - Functions
     
     private func addSnapshotListener() {
-
         FirestoreManager.fetchDocument(id: objectId, reference: ref, withListener: true) { (result: Result<T, FirestoreError>) in
             switch result {
             case .success(let object):
@@ -60,8 +59,8 @@ open class ObjectRepository<T: Codable>: ObservableObject, ObjectRepositoryProto
     }
     
     
-    public func rename(_ newName: String) -> Future<Bool, Error> {
-        self.update(["title": newName]) // would be good to have Enum-Values in here, but since enums cannot be inherited, I did not had an idea how to manage that
+    public func rename(_ newName: String, key: String) -> Future<Bool, Error> {
+        self.update([key: newName]) // would be good to have Enum-Values in here, but since enums cannot be inherited, I did not had an idea how to manage that
     }
     
     
