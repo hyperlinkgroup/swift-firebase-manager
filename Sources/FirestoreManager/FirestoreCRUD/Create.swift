@@ -31,7 +31,7 @@ extension FirestoreManager {
                 completion(.success(reference.documentID))
             }
         } catch {
-            completion(.failure(FirestoreError.create(error: error)))
+            completion(.failure(FirestoreError.fail(error: error, action: .create, reference: reference, id: id)))
         }
     }
     
@@ -52,13 +52,13 @@ extension FirestoreManager {
                 let docRef = reference.reference().document()
                 batch.setData(encodedElement, forDocument: docRef)
             } catch {
-                completion(.create(error: FirestoreError.decoding(error: error)))
+                completion(.decoding(error: error))
             }
         }
         
         batch.commit { error in
             if let error = error {
-                completion(.create(error: error))
+                completion(.fail(error: error, action: .batchCreate, reference: reference, id: nil))
             } else {
                 completion(nil)
             }

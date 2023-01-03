@@ -20,11 +20,12 @@ extension FirestoreManager {
      - Parameter withListener: Whether a listener should be added to register any changes made to the collection. Default is true
      */
     public static func fetchCollection<T>(_ reference: ReferenceProtocol,
-                                   filters: [String: Any]? = nil,
-                                   orderBy: [String]? = nil,
-                                   descending: Bool = false,
-                                   limit: Int? = nil,
-                                   completion: @escaping (Result<[T], FirestoreError>) -> Void) where T: Decodable {
+                                          filters: [String: Any]? = nil,
+                                          orderBy: [String]? = nil,
+                                          descending: Bool = false,
+                                          limit: Int? = nil,
+                                          withListener: Bool = false,
+                                          completion: @escaping (Result<[T], FirestoreError>) -> Void) where T: Decodable {
         
         
         var query: Query = reference.reference()
@@ -42,13 +43,8 @@ extension FirestoreManager {
         }
         
         let snapshotBlock = { (querySnapshot: QuerySnapshot?, error: Error?) in
-            if let error = error {
-                completion(.failure(.fetch(error: error)))
-                return
-            }
-            
             guard let documents = querySnapshot?.documents else {
-                completion(.failure(.documentNotFound))
+                completion(.failure(FirestoreError.fail(error: error, action: .read, reference: reference, id: nil)))
                 return
             }
             do {
@@ -58,7 +54,7 @@ extension FirestoreManager {
                 
                 completion(.success(objects))
             } catch {
-                completion(.failure(.decoding(error: error)))
+                completion(.failure(FirestoreError.decoding(error: error)))
             }
         }
         
@@ -70,7 +66,7 @@ extension FirestoreManager {
         }
     }
     
-   
+    
     /**
      Fetch a single document in Firebase.
      
@@ -83,15 +79,11 @@ extension FirestoreManager {
         let documentReference = reference.reference().document(id)
         
         let snapshotBlock = { (document: DocumentSnapshot?, error: Error?) in
-            if let error = error {
-                completion(.failure(.fetch(error: error)))
+            guard let document, document.exists else {
+                completion(.failure(FirestoreError.fail(error: error, action: .read, reference: reference, id: id)))
                 return
             }
             
-            guard let document = document, document.exists else {
-                completion(.failure(.documentNotFound))
-                return
-            }
             do {
                 let decodedObject = try document.data(as: T.self)
                 completion(.success(decodedObject))

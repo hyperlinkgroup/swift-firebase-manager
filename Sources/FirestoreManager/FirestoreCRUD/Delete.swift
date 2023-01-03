@@ -17,7 +17,7 @@ extension FirestoreManager {
     public static func deleteDocument(id: String, reference: ReferenceProtocol, completion: ((FirestoreError?) -> Void)? = nil) {
         reference.reference().document(id).delete { error in
             if let error = error {
-                completion?(FirestoreError.delete(error: error))
+                completion?(.fail(error: error, action: .delete, reference: reference, id: id))
             } else {
                 completion?(nil)
             }

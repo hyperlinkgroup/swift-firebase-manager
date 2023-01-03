@@ -26,7 +26,7 @@ extension FirestoreManager {
             try reference.reference().document(id).setData(from: object, merge: false)
             completion(.success(id))
         } catch {
-            completion(.failure(.update(error: error)))
+            completion(.failure(.fail(error: error, action: .update, reference: reference, id: id)))
         }
     }
     
@@ -42,7 +42,7 @@ extension FirestoreManager {
         
         reference.reference().document(id).setData(newValues, merge: true) { error in
             if let error = error {
-                completion(.failure(.update(error: error)))
+                completion(.failure(.fail(error: error, action: .update, reference: reference, id: id)))
             } else {
                 completion(.success(id))
             }

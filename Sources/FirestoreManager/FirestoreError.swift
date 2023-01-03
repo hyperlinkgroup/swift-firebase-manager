@@ -7,35 +7,32 @@
 
 import Foundation
 
-public enum FirestoreError: LocalizedError {
-    case create(error: Error)
+public enum FirestoreAction: String {
+    case create, batchCreate, read, update, delete
+}
+
+public enum FirestoreError: LocalizedError, CustomNSError {
+    case fail(error: Error?, action: FirestoreAction, reference: ReferenceProtocol, id: String?)
     case decoding(error: Error)
-    case delete(error: Error)
-    case documentNotFound
-    case fetch(error: Error)
-    case update(error: Error)
-    case unknown(error: Error?)
     
     public var errorDescription: String? {
         switch self {
-        case .create(let error): return "Error creating document: \(error.localizedDescription)"
-        case .decoding(let error): return "Error decoding result: \(error.localizedDescription)"
-        case .delete(let error): return "Error deleting document: \(error.localizedDescription)"
-        case .documentNotFound: return "Error finding document"
-        case .fetch(let error): return "Error fetch document(s): \(error.localizedDescription)"
-        case .update(let error): return "Error updating document(s): \(error.localizedDescription)"
-        case .unknown(let error): return "Unknown Error \(error?.localizedDescription ?? "")"
+        case .fail(_, let action, let reference, let id): return "Firestore Error on \(action.rawValue) from reference /\(reference.rawValue)/ (Parent)Id: \(id ?? "unknown")"
+        case .decoding: return "Decoding Error"
         }
     }
     
     public var failureReason: String? {
         switch self {
-        case .create(let error): return String(describing: error)
-        case .decoding(let error): return String(describing: error)
-        case .delete(let error): return String(describing: error)
-        case .fetch(let error): return String(describing: error)
-        case .update(let error): return String(describing: error)
-        default: return nil
+        case .fail(let error, _, _, let id): return error?.localizedDescription ?? "Document \(id ?? "") not found"
+        case .decoding(let error): return error.localizedDescription
+        }
+    }
+    
+    public var _domain: String {
+        switch self {
+        case .fail(_, let action, let reference, _): return "Firestore.\(reference.rawValue.capitalized).\(action.rawValue.capitalized)"
+        case .decoding: return "Firestore.Decoding"
         }
     }
 }
