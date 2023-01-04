@@ -10,6 +10,7 @@ import Foundation
 enum AuthenticationError: LocalizedError {
     case configuration
     case firebase(error: Error?)
+    case unknown
     
     var errorDescription: String? {
         switch self {
@@ -17,6 +18,8 @@ enum AuthenticationError: LocalizedError {
             return "Authentication Method is not allowed according to Configuration Settings"
         case .firebase(let error):
             return "Authentication failed due to Firebase Error: \(error?.localizedDescription ?? "Unknown")"
+        case .unknown:
+            return "An unknown Error Occured"
         }
     }
 }

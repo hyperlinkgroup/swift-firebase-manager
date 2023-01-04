@@ -30,24 +30,22 @@ extension AuthenticationManager {
             let credentialIdentifier = AuthErrorUserInfoUpdatedCredentialKey
             if error.userInfo.keys.contains(credentialIdentifier),
                let linkedCredential = error.userInfo[credentialIdentifier] as? AuthCredential {
-                self.authenticate(credential: linkedCredential) { result in
-                    switch result {
-                    case .success:
-                        completion(nil)
-                    case .failure(let error):
+                auth.signIn(with: linkedCredential) { result, error in
+                    if let error {
                         self.handleError(error, completion: completion)
+                    } else {
+                        completion(nil)
                     }
                 }
             }
         default:
-            // Crashlytics.crashlytics().record(error: error)
             print(error.localizedDescription)
             finishedHandling()
         }
         
         // If we have a completion, we execute it. Otherwise we use the delegate
         func finishedHandling() {
-            completion(rawError)
+            completion(AuthenticationError.firebase(error: rawError))
         }
     }
 }

@@ -57,7 +57,7 @@ extension AuthenticationManager {
             }
             authenticateWithCredential(credential: appleIDCredential, completion: completion)
         case .failure(let error):
-            completion(.failure(AuthorizationError.credential(error: error)))
+            completion(.failure(error))
         }
     }
     
@@ -86,7 +86,7 @@ extension AuthenticationManager {
      */
     static func authenticate(credential: AuthCredential, completion: @escaping (Result<Bool, Error>) -> Void) {
         
-        if let currentUser = currentUser {
+        if let currentUser {
             if !userIsAuthenticated {
                 // anonymous account is linked to new created one
                 currentUser.link(with: credential, completion: handleResult)
@@ -103,7 +103,7 @@ extension AuthenticationManager {
                 completion(.success(true))
                 return
             }
-            completion(.failure(AuthenticationError.firebase(error: error)))
+            completion(.failure(error ?? AuthenticationError.unknown))
         }
     }
     
