@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import FirebaseFirestore
 
 public enum FirestoreAction: String {
     case create, batchCreate, read, update, delete
@@ -31,8 +32,28 @@ public enum FirestoreError: LocalizedError, CustomNSError {
     
     public var _domain: String {
         switch self {
-        case .fail(_, let action, let reference, _): return "Firestore.\(reference.rawValue.capitalized).\(action.rawValue.capitalized)"
+        case .fail(_, let action, let reference, _):
+            let actionReference = "Firestore.\(reference.rawValue.capitalized).\(action.rawValue.capitalized)"
+            return actionReference + (firestoreDomain ?? "")
         case .decoding: return "Firestore.Decoding"
+        }
+    }
+    
+    var firestoreDomain: String? {
+        switch self {
+        case .fail(let error, _, _, _):
+            guard let error = error as NSError? else { return nil }
+            
+            switch error.code {
+            case FirestoreErrorCode.permissionDenied.rawValue: return "Unauthorized"
+            case FirestoreErrorCode.notFound.rawValue: return "NotFound"
+            case FirestoreErrorCode.alreadyExists.rawValue: return "AlreadyExists"
+            case FirestoreErrorCode.invalidArgument.rawValue: return "InvalidArgument"
+            case FirestoreErrorCode.unauthenticated.rawValue: return "Unauthenticated"
+            case FirestoreErrorCode.failedPrecondition.rawValue: return "FailedPrecondition"
+            default: return nil
+            }
+        default: return nil
         }
     }
 }
