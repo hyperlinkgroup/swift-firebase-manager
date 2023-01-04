@@ -25,13 +25,14 @@ open class ObjectRepository<T: Codable>: ObservableObject, ObjectRepositoryProto
         self.object = object
         self.ref = reference
         
-        addSnapshotListener()
+        addSnapshotListener(liveUpdates: false)
     }
     
-    // MARK: - Functions
     
-    private func addSnapshotListener() {
-        FirestoreManager.fetchDocument(id: objectId, reference: ref, withListener: true) { (result: Result<T, FirestoreError>) in
+    // MARK: - Snapshot Listener
+    
+    public func addSnapshotListener(liveUpdates: Bool) {
+        FirestoreManager.fetchDocument(id: objectId, reference: ref, withListener: liveUpdates) { (result: Result<T, FirestoreError>) in
             switch result {
             case .success(let object):
                 self.object = object
@@ -41,6 +42,12 @@ open class ObjectRepository<T: Codable>: ObservableObject, ObjectRepositoryProto
         }
     }
     
+    public func removeSnapshotListener() {
+        FirestoreManager.removeSnapshotListener(objectId)
+    }
+    
+    
+    // MARK: - Functions
     
     public func delete() -> Future<Bool, Error> {
         Future { promise in
