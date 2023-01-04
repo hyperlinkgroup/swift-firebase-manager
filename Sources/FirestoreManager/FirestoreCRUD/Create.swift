@@ -49,7 +49,7 @@ extension FirestoreManager {
             do {
                 let encodedElement = try Firestore.Encoder().encode(element)
                 // automatically generate unique id
-                let docRef = reference.reference().document()
+                let docRef = try reference.reference().document()
                 batch.setData(encodedElement, forDocument: docRef)
             } catch {
                 completion(.decoding(error: error))

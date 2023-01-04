@@ -9,13 +9,13 @@ import Firebase
 
 public protocol ReferenceProtocol {
     var rawValue: String { get }
-    var parent: ParentReference? { get }
+    func parent() throws -> ParentReference?
 }
 
 extension ReferenceProtocol {
-    public func reference() -> CollectionReference {
-        if let parent = parent {
-            return parent.reference.reference().document(parent.id).collection(rawValue)
+    public func reference() throws -> CollectionReference {
+        if let parent = try parent() {
+            return try parent.reference.reference().document(parent.id).collection(rawValue)
         } else {
             return FirestoreManager.database.collection(rawValue)
         }

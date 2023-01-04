@@ -15,11 +15,23 @@ public enum FirestoreAction: String {
 public enum FirestoreError: LocalizedError, CustomNSError {
     case fail(error: Error?, action: FirestoreAction, reference: ReferenceProtocol, id: String?)
     case decoding(error: Error)
+    case incompleteReference(reference: ReferenceProtocol)
     
     public var errorDescription: String? {
         switch self {
-        case .fail(_, let action, let reference, let id): return "Firestore Error on \(action.rawValue) from reference /\(reference.rawValue)/ (Parent)Id: \(id ?? "unknown")"
+        case .fail(_, let action, let reference, let id):
+            var message = "Firestore Error on \(action.rawValue) from reference "
+            if let refPath = try? reference.reference().path {
+                message += refPath
+            } else {
+                message += reference.rawValue
+            }
+            if let id {
+                message += "/\(id)"
+            }
+            return message
         case .decoding: return "Decoding Error"
+        case .incompleteReference(let reference): return "Trying to access reference with missing parent id: \(reference.rawValue)"
         }
     }
     
@@ -27,6 +39,7 @@ public enum FirestoreError: LocalizedError, CustomNSError {
         switch self {
         case .fail(let error, _, _, let id): return error?.localizedDescription ?? "Document \(id ?? "") not found"
         case .decoding(let error): return error.localizedDescription
+        case .incompleteReference(let reference): return "\(reference.rawValue) not found"
         }
     }
     
@@ -36,6 +49,7 @@ public enum FirestoreError: LocalizedError, CustomNSError {
             let actionReference = "Firestore.\(reference.rawValue.capitalized).\(action.rawValue.capitalized)"
             return actionReference + (firestoreDomain ?? "")
         case .decoding: return "Firestore.Decoding"
+        case .incompleteReference: return "Firestore.Reference"
         }
     }
     

@@ -16,12 +16,16 @@ extension FirestoreManager {
      - Parameter reference: The collection name
      */
     public static func deleteDocument(id: String, reference: ReferenceProtocol, completion: ((FirestoreError?) -> Void)? = nil) {
-        reference.reference().document(id).delete { error in
-            if let error = error {
-                completion?(.fail(error: error, action: .delete, reference: reference, id: id))
-            } else {
-                completion?(nil)
+        do {
+            try reference.reference().document(id).delete { error in
+                if let error = error {
+                    completion?(.fail(error: error, action: .delete, reference: reference, id: id))
+                } else {
+                    completion?(nil)
+                }
             }
+        } catch {
+            completion?(.incompleteReference(reference: reference))
         }
     }
     
@@ -32,13 +36,17 @@ extension FirestoreManager {
      */
     
     public static func deleteField(id: String, reference: ReferenceProtocol, field: String, completion: @escaping((FirestoreError?) -> Void)) {
-        reference.reference().document(id)
-            .updateData([field: FieldValue.delete()]) { error in
-                var firestoreError: FirestoreError?
-                if let error {
-                    firestoreError = .fail(error: error, action: .update, reference: reference, id: id)
+        do {
+            try reference.reference().document(id)
+                .updateData([field: FieldValue.delete()]) { error in
+                    var firestoreError: FirestoreError?
+                    if let error {
+                        firestoreError = .fail(error: error, action: .update, reference: reference, id: id)
+                    }
+                    completion(firestoreError)
                 }
-                completion(firestoreError)
-            }
+        } catch {
+            completion(.incompleteReference(reference: reference))
+        }
     }
 }

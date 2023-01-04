@@ -40,12 +40,16 @@ extension FirestoreManager {
      */
     public static func updateData(id: String, reference: ReferenceProtocol, newValues: [String: Any], completion: @escaping(Result<String, FirestoreError>) -> Void) {
         
-        reference.reference().document(id).setData(newValues, merge: true) { error in
-            if let error = error {
-                completion(.failure(.fail(error: error, action: .update, reference: reference, id: id)))
-            } else {
-                completion(.success(id))
+        do {
+            try reference.reference().document(id).setData(newValues, merge: true) { error in
+                if let error = error {
+                    completion(.failure(.fail(error: error, action: .update, reference: reference, id: id)))
+                } else {
+                    completion(.success(id))
+                }
             }
+        } catch {
+            completion(.failure(.incompleteReference(reference: reference)))
         }
     }
 }

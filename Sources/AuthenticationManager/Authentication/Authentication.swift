@@ -14,8 +14,9 @@ extension AuthenticationManager {
             return
         }
         
-        guard !hasUser else {
+        if let userId {
             // user is already authenticated
+            print("Welcome back anonymous user with id \(userId)")
             completion(nil)
             return
         }
@@ -24,6 +25,7 @@ extension AuthenticationManager {
             if let error = error {
                 completion(AuthenticationError.firebase(error: error))
             } else {
+                print("Created account for anonymous user with id \(userId ?? "")")
                 completion(nil)
             }
         }
