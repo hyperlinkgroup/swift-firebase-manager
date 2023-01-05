@@ -21,8 +21,6 @@ extension AuthenticationManager {
             
             // completion is called, so that caller can register notification to receive updates on reauthentication
             finishedHandling()
-            
-            reauthenticateUser()
             return
         case AuthErrorCode.credentialAlreadyInUse.rawValue:
             // the account corresponding to the credential already exists among your users, or is already linked to a Firebase User

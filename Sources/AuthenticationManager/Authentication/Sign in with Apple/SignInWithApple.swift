@@ -7,6 +7,7 @@
 
 import AuthenticationServices
 import FirebaseAuth
+import FirebaseFirestoreManager
 
 extension AuthenticationManager {
     /**
@@ -112,34 +113,11 @@ extension AuthenticationManager {
      If the user authenticated on this device already, the requested infos are not in the scope, so we need to take care, that already existing values are not overwritten by empty values
      */
     static func updateUserInfo(credential: ASAuthorizationAppleIDCredential, completion: @escaping (Error?) -> Void) {
-        if let email = credential.email {
-            self.email = email
+        
+        guard let repository = self.configuration.userRepository else {
+            completion(nil)
+            return
         }
-        
-        
-        let fullName = credential.fullName
-        let displayName = [fullName?.givenName, fullName?.familyName]
-            .compactMap { $0 }
-            .filter { !$0.isEmpty }
-            .joined(separator: " ")
-        
-        guard !displayName.isEmpty,
-              let changeRequest = currentUser?.createProfileChangeRequest()
-            else { completion(nil); return }
-        
-        self.userName = displayName
-        
-        changeRequest.displayName = displayName
-        changeRequest.commitChanges { error in
-            if error != nil {
-                // TODO: This is an error that should only passed as a warning for the Dev for logging.
-            }
-            
-            if let repository = self.configuration.userRepository, let email = credential.email {
-                repository.saveUser(name: displayName, email: email, completion: completion)
-            } else {
-                completion(nil)
-            }
-        }
+        repository.updateUserInfo(email: credential.email, name: credential.displayName, completion: completion)
     }
 }

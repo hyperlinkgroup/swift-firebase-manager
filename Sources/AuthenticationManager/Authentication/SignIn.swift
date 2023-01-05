@@ -30,17 +30,4 @@ extension AuthenticationManager {
             }
         }
     }
-    
-    /**
-     Security-sensitive actions (deleting account for now, later may be password change or mail-adress-change) require that the user has recently signed in and we catch at this point the "requiresRecentLogin"-Error.
-     When a re-authentication is needed, we need to ask the user again for the credentials.
-     */
-    public static func reauthenticateUser() {
-        #if canImport(UIKit)
-        self.authView = AuthenticationView(delegate: nil)
-        self.authView?.authenticateBySignInWithApple()
-        #else
-        // TODO: SwiftUI
-        #endif
-    }
 }

@@ -59,8 +59,10 @@ extension FirestoreManager {
             }
             
             if withListener {
-                let listener = query.addSnapshotListener(snapshotBlock)
-                self.snapshotListeners[reference.rawValue] =  listener
+                DispatchQueue.main.async {
+                    let listener = query.addSnapshotListener(snapshotBlock)
+                    self.snapshotListeners[reference.rawValue] =  listener
+                }
             } else {
                 query.getDocuments(completion: snapshotBlock)
             }
@@ -96,8 +98,10 @@ extension FirestoreManager {
             }
             
             if withListener {
-                let listener = documentReference.addSnapshotListener(snapshotBlock)
-                self.snapshotListeners[reference.rawValue] = listener
+                DispatchQueue.main.async {
+                    let listener = documentReference.addSnapshotListener(snapshotBlock)
+                    self.snapshotListeners[reference.rawValue] = listener
+                }
             } else {
                 documentReference.getDocument(completion: snapshotBlock)
             }

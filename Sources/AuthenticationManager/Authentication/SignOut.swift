@@ -29,20 +29,25 @@ extension AuthenticationManager {
     }
     
     /**
-     Reauthenticate User and delete its account in Firebase
+     Delete the users account in Firebase
+     To simplify error handling, let the user authenticate before accessing this function.
+     
+     Database Triggers need to be implemented to remove all associated data.
      */
     public static func deleteAccount(completion: @escaping(Error?) -> Void) {
-        guard let currentUser = auth.currentUser else { completion(nil); return }
-        reauthenticateUser()
-        
-        // TODO: We don't get a callback from reauthenticate. Need to check whether this is necessary to continue, or if simply the deletion fails and we can try again afterwards
+        guard let currentUser = auth.currentUser else {
+            completion(nil)
+            return
+        }
         
         currentUser.delete { error in
             if let error = error {
                 handleError(error, completion: completion)
-            } else {
-                completion(nil)
+                return
             }
+            
+            removeAuthorizationKey()
+            completion(nil)
         }
     }
 }

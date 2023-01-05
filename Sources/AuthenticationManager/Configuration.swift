@@ -8,6 +8,8 @@
 import Foundation
 
 public struct Configuration {
-    public let allowAnonymousUsers = true
-    public let userRepository: UserRepositoryProtocol? = nil
+    public var allowAnonymousUsers = true
+    public var userRepository: UserRepositoryProtocol? = nil
+    
+    public init() { }
 }

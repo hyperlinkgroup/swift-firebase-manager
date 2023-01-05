@@ -19,3 +19,12 @@ extension ASAuthorizationAppleIDProvider.CredentialState {
         }
     }
 }
+
+extension ASAuthorizationAppleIDCredential {
+    var displayName: String {
+        [fullName?.givenName, fullName?.familyName]
+            .compactMap { $0 }
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+    }
+}

@@ -8,7 +8,7 @@
 import Foundation
 
 public protocol UserRepositoryProtocol {
-    func saveUser(name: String, email: String, completion: @escaping (Error?) -> Void)
+    func updateUserInfo(email: String?, name: String?, completion: @escaping (Error?) -> Void)
     func fetchCurrentUser()
 }
 
