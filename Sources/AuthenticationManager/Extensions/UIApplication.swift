@@ -5,6 +5,7 @@
 //  Created by Anna Münster on 21.09.22.
 //
 
+#if canImport(UIKit)
 import UIKit
 
 extension UIApplication {
@@ -20,3 +21,4 @@ extension UIApplication {
         keyWindow?.rootViewController?.presentedViewController ?? keyWindow?.rootViewController
     }
 }
+#endif

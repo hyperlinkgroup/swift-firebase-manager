@@ -7,7 +7,7 @@ let package = Package(
     name: "FirebaseManager",
     platforms: [
         .iOS(.v14),
-        .macOS(.v10_14)
+        .macOS(.v10_15)
     ],
     products: [
         .library(
@@ -18,7 +18,7 @@ let package = Package(
             ])
     ],
     dependencies: [
-        .package(url: "https://github.com/firebase/firebase-ios-sdk.git", .upToNextMajor(from: "9.0.0"))
+        .package(url: "https://github.com/firebase/firebase-ios-sdk.git", .upToNextMajor(from: "10.0.0"))
     ],
     targets: [
         .target(

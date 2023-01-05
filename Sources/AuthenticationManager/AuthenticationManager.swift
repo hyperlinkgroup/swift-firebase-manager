@@ -14,8 +14,6 @@ open class AuthenticationManager: NSObject {
     static var configuration = Configuration()
     static var currentNonce = Nonce()
     
-    static var authView: SignInWithAppleAuthenticationView?
-    
     /**
         Possibility to change custom settings. Not needed if standard settings are used.
      */

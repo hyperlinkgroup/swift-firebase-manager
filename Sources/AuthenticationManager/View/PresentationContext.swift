@@ -7,6 +7,7 @@
 //  Created by Anna Münster on 17.11.21.
 //
 
+#if canImport(UIKit)
 import AuthenticationServices
 
 class PresentationContext: NSObject, ASAuthorizationControllerPresentationContextProviding {
@@ -23,3 +24,4 @@ class PresentationContext: NSObject, ASAuthorizationControllerPresentationContex
         self.window
     }
 }
+#endif
