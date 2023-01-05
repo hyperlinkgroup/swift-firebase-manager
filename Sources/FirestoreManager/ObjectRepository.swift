@@ -55,7 +55,7 @@ open class ObjectRepository<T: Codable>: ObservableObject, ObjectRepositoryProto
             FirestoreManager.removeSnapshotListener(self.objectId)
             
             FirestoreManager.deleteDocument(id: self.objectId, reference: self.ref) { error in
-                if let error = error {
+                if let error {
                     self.didReceiveError(error)
                     promise(.failure(error))
                 }

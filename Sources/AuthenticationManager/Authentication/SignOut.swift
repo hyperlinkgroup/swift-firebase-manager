@@ -41,7 +41,7 @@ extension AuthenticationManager {
         }
         
         currentUser.delete { error in
-            if let error = error {
+            if let error {
                 handleError(error, completion: completion)
                 return
             }

@@ -23,7 +23,7 @@ extension FirestoreManager {
                                                     reference: ReferenceProtocol,
                                                     completion: @escaping(Result<String, FirestoreError>) -> Void) {
         do {
-            if let id = id {
+            if let id {
                 try reference.reference().document(id).setData(from: object)
                 completion(.success(id))
             } else {
@@ -57,7 +57,7 @@ extension FirestoreManager {
         }
         
         batch.commit { error in
-            if let error = error {
+            if let error {
                 completion(.fail(error: error, action: .batchCreate, reference: reference, id: nil))
             } else {
                 completion(nil)

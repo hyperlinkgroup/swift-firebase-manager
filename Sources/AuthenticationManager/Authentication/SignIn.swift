@@ -22,7 +22,7 @@ extension AuthenticationManager {
         }
         
         auth.signInAnonymously { _, error in
-            if let error = error {
+            if let error {
                 completion(AuthenticationError.firebase(error: error))
             } else {
                 print("Created account for anonymous user with id \(userId ?? "")")

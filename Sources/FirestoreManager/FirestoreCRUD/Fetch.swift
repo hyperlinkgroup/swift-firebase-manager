@@ -38,7 +38,7 @@ extension FirestoreManager {
                 query = query.order(by: orderValue, descending: descending)
             }
             
-            if let limit = limit {
+            if let limit {
                 query = query.limit(to: limit)
             }
             
@@ -120,7 +120,7 @@ extension FirestoreManager {
         do {
             var query: Query = try reference.reference()
             
-            if let whereTuple = whereTuple {
+            if let whereTuple {
                 query = query.whereField(whereTuple.0, isEqualTo: whereTuple.1)
             }
             
