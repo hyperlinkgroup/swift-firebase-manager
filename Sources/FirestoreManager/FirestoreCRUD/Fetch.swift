@@ -79,7 +79,7 @@ extension FirestoreManager {
      - Parameter reference: The parent's collection name
      - Parameter withListener: Whether a listener should be added to register any changes made to the collection. Default is true
      */
-    public static func fetchDocument<T>(id: String, reference: ReferenceProtocol, withListener: Bool = true, completion: @escaping (Result<T, FirestoreError>) -> Void) where T: Decodable {
+    public static func fetchDocument<T>(id: String, reference: ReferenceProtocol, withListener: Bool = false, completion: @escaping (Result<T, FirestoreError>) -> Void) where T: Decodable {
         do {
             let documentReference = try reference.reference().document(id)
             

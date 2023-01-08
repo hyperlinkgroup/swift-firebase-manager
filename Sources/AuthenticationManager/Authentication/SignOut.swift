@@ -10,6 +10,8 @@ import Foundation
 extension AuthenticationManager {
     /**
      Sign out from Firebase on the device and remove the authorization key for sign in with Apple.
+     
+     The providerId is checked because if there is none, the user is either not signed in or is anonymous.
      */
     public static func signOut(completion: @escaping (Error?) -> Void) {
         guard let providerId = auth.currentUser?.providerData.first?.providerID,

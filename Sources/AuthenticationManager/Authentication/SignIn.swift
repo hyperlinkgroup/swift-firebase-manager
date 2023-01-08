@@ -30,4 +30,16 @@ extension AuthenticationManager {
             }
         }
     }
+    
+    public static func authenticateWithEmail(email: String, password: String, completion: @escaping(Error?) -> Void) {
+        
+        auth.signIn(withEmail: email, password: password) { _, error in
+            if let error {
+                completion(AuthenticationError.firebase(error: error))
+            } else {
+                print("Welcome user with id \(userId ?? "")")
+                completion(nil)
+            }
+        }
+    }
 }

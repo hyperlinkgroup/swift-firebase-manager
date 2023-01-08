@@ -88,13 +88,17 @@ extension AuthenticationManager {
     static func authenticate(credential: AuthCredential, completion: @escaping (Result<Bool, Error>) -> Void) {
         
         if let currentUser {
+            // Some user has used the app, either anonymously or with Apple
+            
             if !userIsAuthenticated {
                 // anonymous account is linked to new created one
                 currentUser.link(with: credential, completion: handleResult)
             } else {
+                // Account is reauthenticated to perform some security-sensitive actions (deleting account for now, later may be password change or mail-adress-change)
                 currentUser.reauthenticate(with: credential, completion: handleResult)
             }
         } else {
+            // Only happens if no user has ever used the app on the device
             auth.signIn(with: credential, completion: handleResult)
         }
         
