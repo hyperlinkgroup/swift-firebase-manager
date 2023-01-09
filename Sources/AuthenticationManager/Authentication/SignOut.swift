@@ -14,11 +14,13 @@ extension AuthenticationManager {
      The providerId is checked because if there is none, the user is either not signed in or is anonymous.
      */
     public static func signOut(completion: @escaping (Error?) -> Void) {
-        guard let providerId = auth.currentUser?.providerData.first?.providerID,
-              self.providerId == providerId
-        else {
-            completion(AuthorizationError.providerId)
-            return
+        if userIsAuthenticated {
+            guard let providerId = auth.currentUser?.providerData.first?.providerID,
+                  self.providerId == providerId
+            else {
+                completion(AuthorizationError.providerId)
+                return
+            }
         }
         
         do {

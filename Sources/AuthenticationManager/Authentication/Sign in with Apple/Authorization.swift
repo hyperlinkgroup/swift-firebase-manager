@@ -25,9 +25,9 @@ extension AuthenticationManager {
      
      This cannot be used to ask for permission. It is solely to check for the permission status.
      */
-    static func checkAuthorizationState(completion: @escaping (Result<Any?, AuthorizationError>) -> Void) {
+    public static func checkAuthorizationState(completion: @escaping (Result<Bool?, Error>) -> Void) {
         guard let authorizationKey = authorizationKey, !authorizationKey.isEmpty else {
-            completion(.failure(.credentialState(description: "Missing Key from User Defaults", error: nil)))
+            completion(.failure(AuthorizationError.credentialState(description: "Missing Key from User Defaults", error: nil)))
             return
         }
         
@@ -36,7 +36,7 @@ extension AuthenticationManager {
             case .authorized:
                 completion(.success(nil))
             default:
-                completion(.failure(.credentialState(description: credentialState.description, error: error)))
+                completion(.failure(AuthorizationError.credentialState(description: credentialState.description, error: error)))
             }
         }
     }
