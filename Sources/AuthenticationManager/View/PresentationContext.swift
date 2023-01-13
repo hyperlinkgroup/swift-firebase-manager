@@ -1,6 +1,6 @@
 //
 //  PresentationContext.swift
-//  Quartermile
+//
 //
 //  Abstract delegate to create view context in which an authorization window can be displayed in case user interaction is needed
 //
