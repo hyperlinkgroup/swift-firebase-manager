@@ -100,7 +100,7 @@ extension FirestoreManager {
             if withListener {
                 DispatchQueue.main.async {
                     let listener = documentReference.addSnapshotListener(snapshotBlock)
-                    self.snapshotListeners[reference.rawValue] = listener
+                    self.snapshotListeners[documentReference.path] = listener
                 }
             } else {
                 documentReference.getDocument(completion: snapshotBlock)

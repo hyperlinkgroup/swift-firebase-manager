@@ -21,8 +21,8 @@ open class CollectionRepository<T: Codable>: ObservableObject {
         self.ref = reference
         self.filters = filters
         self.order = order
-        fetchCollection(withListener: false)
     }
+    
     
     open func fetchCollection(withListener: Bool) {
         FirestoreManager.fetchCollection(ref, filters: filters, orderBy: order, withListener: withListener) { (result: Result<[T], FirestoreError>) in
@@ -47,7 +47,11 @@ open class CollectionRepository<T: Codable>: ObservableObject {
     }
     
     private func getPath(id: String) -> String {
-        String(describing: try? ref.reference().path) + "/\(id)"
+        if let path = try? ref.reference().path {
+            return "/" + path + "/\(id)"
+        } else {
+            return "/\(id)"
+        }
     }
     
     open func update(_ object: T, id: String) {
@@ -62,7 +66,13 @@ open class CollectionRepository<T: Codable>: ObservableObject {
     }
     
     open func delete(id: String) {
-        FirestoreManager.deleteDocument(id: id, reference: ref)
+        FirestoreManager.deleteDocument(id: id, reference: ref) { error in
+            if let error {
+                self.didReceiveError(error)
+            } else {
+                print("Object deleted \(self.getPath(id: id))!")
+            }
+        }
     }
     
     open func didReceiveError(_ error: Error) { }
