@@ -32,7 +32,7 @@ extension AuthenticationManager {
      Delete the users account in Firebase
      To simplify error handling, let the user authenticate before accessing this function.
      
-     Database Triggers need to be implemented to remove all associated data.
+     - Attention: Database Triggers need to be implemented to remove all associated data.
      */
     public static func deleteAccount(completion: @escaping(Error?) -> Void) {
         guard let currentUser = auth.currentUser else {

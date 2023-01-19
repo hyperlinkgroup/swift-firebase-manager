@@ -10,12 +10,12 @@ import AuthenticationServices
 
 extension AuthenticationManager {
     // identifier from apple credentials - used for checking authorization state after login
-    public static var authorizationKey: String? {
+    static var authorizationKey: String? {
         get { UserDefaults.standard.string(forKey: UserDefaultsKeys.authorizationIdKey.rawValue) }
         set { UserDefaults.standard.set(newValue, forKey: UserDefaultsKeys.authorizationIdKey.rawValue) }
     }
     
-    public static func removeAuthorizationKey() {
+    static func removeAuthorizationKey() {
         UserDefaults.standard.set(nil, forKey: UserDefaultsKeys.authorizationIdKey.rawValue)
     }
     

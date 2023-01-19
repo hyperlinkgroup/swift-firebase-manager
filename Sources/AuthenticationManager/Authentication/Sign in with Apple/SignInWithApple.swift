@@ -114,10 +114,21 @@ extension AuthenticationManager {
      */
     static func updateUserInfo(credential: ASAuthorizationAppleIDCredential, completion: @escaping (Error?) -> Void) {
         
+        let email = credential.email
+        let name = credential.displayName
+        
+        // Store in UserDefaults
+        if let email, !email.isEmpty {
+            AuthenticationManager.email = email
+        }
+        if !name.isEmpty {
+            AuthenticationManager.userName = name
+        }
+        
         guard let repository = self.configuration.userRepository else {
             completion(nil)
             return
         }
-        repository.updateUserInfo(email: credential.email, name: credential.displayName, completion: completion)
+        repository.receivedUserDetails(email: email, name: !name.isEmpty ? name : nil, completion: completion)
     }
 }
