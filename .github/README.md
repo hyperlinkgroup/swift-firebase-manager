@@ -35,6 +35,10 @@ In Xcode, go to `File > Add Packages` and add `https://github.com/space-squad/sw
 
 The package is separated into three targets and you need to import the one that fits your needs:
 
+- [FirebaseFirestoreManager](#firebasefirestoremanager)
+- [FirebaseStorageManager](#firebasestoragemanager)
+- [FirebaseAuthenticationManager](#firebaseauthenticationmanager)
+
 ### FirebaseFirestoreManager
 Target for all transactions with the Firebase Cloud Firestore.
 
@@ -80,9 +84,7 @@ enum FirestoreReference: ReferenceProtocol {
 }
 ```
 
-Next you need to define all your model classes, conforming to Codable-protocol.
-
-Example:
+Next you need to define all your model classes, conforming to Codable-protocol:
 ```Swift
 public struct City: Codable {
 
@@ -101,9 +103,7 @@ public struct City: Codable {
 }
 ```
 
-Afterwards you can use all FirebaseFirestoreManager-classes for creating, reading, updating or deleting data.
-
-Example:
+Afterwards you can use all `FirebaseFirestoreManager`-classes for creating, reading, updating or deleting data.:
 ```Swift
 import FirebaseFirestoreManager
 
@@ -140,6 +140,8 @@ FirestoreManager.updateDocument(country, reference: FirestoreReference.country, 
 FirestoreManager.deleteDocument(reference: FirestoreReference.country, with: country.id)
 ```
 
+
+
 ### FirebaseStorageManager
 Target for all transactions with the Firebase Cloud Storage, using the Combine-framework.
 
@@ -153,7 +155,6 @@ Target for all transactions with the Firebase Cloud Storage, using the Combine-f
 - [ ] Multiple Buckets
 - [ ] Support more file types
 
-Example:
 ```Swift
 // Create new file in bucket in folder "directory"
 
@@ -189,17 +190,60 @@ Target for all authentication related operations.
 - [x] Sign out and Deleting an Account
 - [x] UIKit-View for handling SignInWithApple-Requests
 
-
-##### Configuration
-By default the `AuthenticationManager` is using Sign In With Apple and allows also anonymous authentication. If you want to disable it, you can use a custom configuration object.
-
-You can also link a repository where you manage your users details. If you subclass the `UserRepositoryProtocol`your user's details with the user details you get during the authentication process.
+##### Public Properties
 
 ```Swift
 import FirebaseAuthenticationManager
 
+AuthenticationManager.hasUser // returns true if user is authenticated
+AuthenticationManager.userId // returns the id of the currently authenticated user, nil if the user is unauthenticated
+AuthenticationManager.userIsAuthenticated // returns true if user is authenticated and not anonymous
+
+AuthenticationManager.userName // returns concatenated name ("John Doe" or "John") if User provided details during Sign In with Apple or was set manually
+AuthenticationManager.userName = "Jane Doe" // userName is overwritten and cannot be restored
+
+AuthenticationManager.email // returns email if User provided details during Sign In with Apple or was set manually
+AuthenticationManager.email = "john.doe@apple.com" // email is overwritten and cannot be restored
+```
+
+
+##### Configuration
+By default the `AuthenticationManager` is using Sign In With Apple and allows also anonymous authentication. If you want to disable it, you can use a custom configuration object. With that the AuthenticationManager needs to be initialized on App Start.
+
+You can also link a repository where you manage your users details. If you subclass the `UserRepositoryProtocol`your user's details with the user details you get during the authentication process.
+
+If you don't need custom settings, you don't need to call the `.setup(:_)`-Function and can start using the Manager wherever you need it.
+
+
+###### SwiftUI:
+```Swift
+import SwiftUI
+import Firebase
+import FirebaseAuthenticationManager
+
+@main
+struct MyApp: App {
+    init() {
+        FirebaseApp.configure()
+
+        var authenticationConfiguration = Configuration()
+        authenticationConfiguration.allowAnonymousUsers = false 
+        authenticationConfiguration.userRepository = MyRepository.shared
+        AuthenticationManager.setup(authenticationConfiguration)
+    }
+}
+```
+
+###### UIKit:
+```Swift
+import UIKit
+import Firebase
+import FirebaseAuthenticationManager
+
 func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
     
+    FirebaseApp.configure()
+
     var authenticationConfiguration = Configuration()
     authenticationConfiguration.allowAnonymousUsers = false 
     authenticationConfiguration.userRepository = MyRepository.shared
@@ -326,6 +370,125 @@ AuthenticationManager.authenticateAnonymously { error in
         // Check detailed Error Response
     } else {
         // Authentication was successful
+    }
+}
+```
+
+
+##### Sign Out
+
+```Swift
+AuthenticationManager.signOut { error in
+    if let error {
+        // Check detailed Error Response
+    } else {
+        // Sign Out was successful
+    }
+}
+```
+
+
+##### Delete Account
+
+You can delete a user's account in Firebase.
+This can require a reauthentication before executing this method.
+
+If your user signed in with its Apple-Account, this requires involving the UI to receive the status of authentication. We don't handle this error (yet), so we advise you to execute an additional login manually before accessing this function.
+
+```Swift
+AuthenticationManager.deleteAccount { error in
+    if let error {
+        // Check detailed Error Response
+    } else {
+        // Deletion of Account was successful
+        // If you stored your user's data in a database, don't forget to implement deleting it separately.
+    }
+}
+```
+
+
+##### UserRepositoryProtocol
+
+By subclassing the `UserRepositoryProtocol`, you get a direct access to the userId if a user is authenticated.
+```Swift
+class UserRepository: UserRepositoryProtocol {
+    static let shared = UserRepository()
+}
+
+// Use it anywhere in your app where you need it
+UserRepository.shared.userId
+```
+
+During the Authentication Process with Apple the User is asked to provide some details like its name and/or email-address. You can access these information by creating a Repository-Class conforming to the `UserRepositoryProtocol`.
+
+
+```Swift
+class UserRepository: UserRepositoryProtocol {
+
+    func receivedUserDetails(email: String?, name: String?, completion: @escaping (Error?) -> Void) {
+        // Depending on your requested scope you receive the user's details in here and can store or update them in a database of your choice, e.g. your UserDefaults or in the Firestore.
+
+        // Attention: If a user signs in multiple times on the same device, we don't receive any values in here. So keep that in mind to prevent overwriting any already stored values in your database.
+
+        if let name {
+            UserDefaults.standard.set(name, forKey: "username")
+        }
+
+
+        // Call completion to proceed with the Authentication flow. You can pass any errors that occur during your database transactions to notify that the authentication procedure included errors
+        completion(nil)
+    }
+}
+``` 
+
+It is recommended to check a user's authorization status on app start, or possibly before sensitive transactions, since these could be changed outside of your app.
+
+You can simplify this Authorization-Flow by implementing the `UserRepositoryProtocol`. We provide two functions, choose the one you need according to your defined Authentication Providers.
+
+If you stored your users details in a remote database, you might want to fetch it after the authorization was successful.
+For this you can implement the `fetchCurrentUser`-Method, which is executed automatically on successful authorization. 
+
+```Swift
+class UserRepository: UserRepositoryProtocol {
+
+    // Custom Function for checking Authorization -> can be called anywhere in your app where you need it
+    func checkAuthState() {
+        // Depending on your Authentication Provider choose
+
+        // (a) if you support anonymous users
+        self.checkAuthorizationWithAnonymousUser { error in
+            if let error {
+                // Handle Error
+
+                // We recommend signing out
+                AuthenticationManager.signOut { _ in }
+            }
+
+            // if no error occured fetchCurrentUser() is called automatically
+        }
+
+        // (b) if you support only Sign In With Apple
+        self.checkAuthorization { error in
+            if let error {
+                // Handle Error
+
+                // We recommend signing out
+                AuthenticationManager.signOut { _ in }
+            }
+        }
+    }
+
+    // Is called automatically after successful authorization
+    func fetchCurrentUser() {
+        // your database transactions for fetching already stored value, e.g. from Firestore
+
+        guard let userId else { return }
+
+        FirestoreManager.fetchDocument(id: userId, reference: FirestoreReference.users) { result in
+            if let user = try? result.get() {
+                print("I am \(user) and my UID is \(userId)")
+            }
+        }
     }
 }
 ```

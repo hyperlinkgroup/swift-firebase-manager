@@ -29,23 +29,27 @@ open class AuthenticationManager: NSObject {
 // MARK: - Auth Getter
 
 extension AuthenticationManager {
-    
-    public static var currentUser: User? {
+    static var currentUser: User? {
         auth.currentUser
     }
     
-    // Attention: should never be false after onboarding, since we cannot persist any data without a user
+    /**
+    - Returns: `true` if a user is authenticated
+     */
     public static var hasUser: Bool {
         currentUser != nil
     }
     
-    // documentId of currents user collection (anonymouly or with account)
-    // Attention: should never be nil after onboarding, since we cannot persist any data without it
+    /**
+     - Returns: ID of the currently authenticated user or `nil` if the user is unauthenticated
+     */
     public static var userId: String? {
         currentUser?.uid
     }
     
-    // user is signed in with user account
+    /**
+     - Returns: `true` if user is authenticated and not anonymous
+     */
     public static var userIsAuthenticated: Bool {
         !(currentUser?.isAnonymous ?? true)
     }
@@ -59,11 +63,17 @@ extension AuthenticationManager {
         case authorizationIdKey, userNameKey, emailKey
     }
     
+    /**
+     - Returns: Concatenated name ("John Doe", "John" or "Doe") if user provided details during Sign In with Apple or was set manually
+     */
     public static var userName: String? {
         get { UserDefaults.standard.string(forKey: UserDefaultsKeys.userNameKey.rawValue) }
         set { UserDefaults.standard.set(newValue, forKey: UserDefaultsKeys.userNameKey.rawValue) }
     }
     
+    /**
+     - Returns: Email Address if user provided details during Sign In with Apple or was set manually
+     */
     public static var email: String? {
         get { UserDefaults.standard.string(forKey: UserDefaultsKeys.emailKey.rawValue) }
         set { UserDefaults.standard.set(newValue, forKey: UserDefaultsKeys.emailKey.rawValue) }

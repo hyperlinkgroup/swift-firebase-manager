@@ -6,7 +6,6 @@
 //
 
 #if canImport(UIKit)
-import Foundation
 import UIKit
 import AuthenticationServices
 
