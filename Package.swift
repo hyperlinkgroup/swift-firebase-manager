@@ -7,17 +7,18 @@ let package = Package(
     name: "FirebaseManager",
     platforms: [
         .iOS(.v14),
-        .macOS(.v10_14)
+        .macOS(.v10_15)
     ],
     products: [
         .library(
             name: "FirebaseManagerPackage",
             targets: [
+                "FirebaseAuthenticationManager", // depends on FirestoreManager
                 "FirebaseStorageManager"
             ])
     ],
     dependencies: [
-        .package(url: "https://github.com/firebase/firebase-ios-sdk.git", .upToNextMajor(from: "9.0.0"))
+        .package(url: "https://github.com/firebase/firebase-ios-sdk.git", .upToNextMajor(from: "10.0.0"))
     ],
     targets: [
         .target(
@@ -33,6 +34,14 @@ let package = Package(
                 .product(name: "FirebaseStorage", package: "firebase-ios-sdk")
             ],
             path: "Sources/StorageManager"
+        ),
+        .target(
+            name: "FirebaseAuthenticationManager",
+            dependencies: [
+                .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
+                "FirebaseFirestoreManager"
+            ],
+            path: "Sources/AuthenticationManager"
         )
     ]
 )

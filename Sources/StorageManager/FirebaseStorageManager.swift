@@ -17,7 +17,7 @@ open class FirebaseStorageManager {
             let storageRef = Storage.storage().reference(withPath: "\(path)/\(fileName).\(fileType.rawValue)")
             
             let taskReference = storageRef.putFile(from: localFile, metadata: nil) { metadata, error in
-                if let error = error {
+                if let error {
                     promise(.failure(.upload(error: error)))
                 }
                 promise(.success(true))
@@ -42,7 +42,7 @@ open class FirebaseStorageManager {
                 let storageRef = Storage.storage().reference(withPath: "\(path)/\(fileName).\(fileType.rawValue)")
                 
                 storageRef.write(toFile: localFile) { url, error in
-                    if let error = error {
+                    if let error {
                         promise(.failure(.download(error: error)))
                         return
                     }
@@ -66,14 +66,14 @@ open class FirebaseStorageManager {
             
             _ = storageRef.putData(data, metadata: nil) { metadata, error in
                 
-                if let error = error {
+                if let error {
                     promise(.failure(.upload(error: error)))
                     return
                 }
                 
                 storageRef.downloadURL { (url, urlError) in
                     
-                    if let urlError = urlError {
+                    if let urlError {
                         promise(.failure(.upload(error: urlError)))
                         return
                     }
