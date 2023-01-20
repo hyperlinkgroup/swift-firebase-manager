@@ -37,6 +37,7 @@ extension AuthenticationManager {
         checkAuthorizationResult(authResult) { result in
             switch result {
             case .success(let credential):
+                self.currentProvider = .signInWithApple
                 updateUserInfo(credential: credential, completion: completion)
             case .failure(let error):
                 self.handleError(error, completion: completion)

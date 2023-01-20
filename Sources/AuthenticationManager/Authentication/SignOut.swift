@@ -14,7 +14,7 @@ extension AuthenticationManager {
      The providerId is checked because if there is none, the user is either not signed in or is anonymous.
      */
     public static func signOut(completion: @escaping (Error?) -> Void) {
-        if userIsAuthenticated {
+        if userIsAuthenticated, currentProvider == .signInWithApple {
             guard let providerId = auth.currentUser?.providerData.first?.providerID,
                   self.providerId == providerId
             else {
@@ -25,6 +25,7 @@ extension AuthenticationManager {
         
         do {
             try auth.signOut()
+            self.currentProvider = nil
             removeAuthorizationKey()
             completion(nil)
         } catch let signOutError {
@@ -39,8 +40,8 @@ extension AuthenticationManager {
      - Attention: Database Triggers need to be implemented to remove all associated data.
      */
     public static func deleteAccount(completion: @escaping(Error?) -> Void) {
-        guard let currentUser = auth.currentUser else {
-            completion(nil)
+        guard let currentUser else {
+            completion(AuthenticationError.unauthorized)
             return
         }
         
@@ -50,6 +51,7 @@ extension AuthenticationManager {
                 return
             }
             
+            self.currentProvider = nil
             removeAuthorizationKey()
             completion(nil)
         }

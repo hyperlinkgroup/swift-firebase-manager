@@ -7,10 +7,6 @@
 
 import FirebaseAuth
 
-public enum AuthenticationProvider {
-    case signInWithApple, emailPassword, anonymous
-}
-
 open class AuthenticationManager: NSObject {
     static let auth = Auth.auth()
     static let providerId = "apple.com"
@@ -60,7 +56,10 @@ extension AuthenticationManager {
 extension AuthenticationManager {
     
     enum UserDefaultsKeys: String {
-        case authorizationIdKey, userNameKey, emailKey
+        case authorizationIdKey,
+             authenticationProvider,
+             userNameKey,
+             emailKey
     }
     
     /**

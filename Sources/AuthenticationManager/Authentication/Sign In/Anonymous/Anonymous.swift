@@ -26,6 +26,7 @@ extension AuthenticationManager {
                 completion(AuthenticationError.firebase(error: error))
             } else {
                 print("Created account for anonymous user with id \(userId ?? "")")
+                self.currentProvider = .anonymous
                 completion(nil)
             }
         }
