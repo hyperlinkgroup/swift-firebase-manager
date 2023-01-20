@@ -1,15 +1,15 @@
 //
-//  Authentication.swift
+//  Anonymous.swift
 //  
 //
-//  Created by Anna Münster on 22.09.22.
+//  Created by Anna Münster on 20.01.23.
 //
 
 import Foundation
 
 extension AuthenticationManager {
     public static func authenticateAnonymously(completion: @escaping(Error?) -> Void) {
-        guard configuration.allowAnonymousUsers else {
+        guard configuration.authProvider.contains(.anonymous) else {
             completion(AuthenticationError.configuration)
             return
         }
@@ -26,18 +26,6 @@ extension AuthenticationManager {
                 completion(AuthenticationError.firebase(error: error))
             } else {
                 print("Created account for anonymous user with id \(userId ?? "")")
-                completion(nil)
-            }
-        }
-    }
-    
-    public static func authenticateWithEmail(email: String, password: String, completion: @escaping(Error?) -> Void) {
-        
-        auth.signIn(withEmail: email, password: password) { _, error in
-            if let error {
-                completion(AuthenticationError.firebase(error: error))
-            } else {
-                print("Welcome user with id \(userId ?? "")")
                 completion(nil)
             }
         }

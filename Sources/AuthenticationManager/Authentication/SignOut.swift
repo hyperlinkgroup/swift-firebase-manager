@@ -1,5 +1,5 @@
 //
-//  Lifecycle.swift
+//  SignOut.swift
 //  
 //
 //  Created by Anna Münster on 22.09.22.
