@@ -17,9 +17,35 @@ extension AuthenticationManager {
      */
     static var currentProvider: AuthenticationProvider? {
         get {
-            guard let value = UserDefaults.standard.string(forKey: UserDefaultsKeys.authenticationProvider.rawValue) else { return nil }
+            guard let value = UserDefaults.standard.string(forKey: UserDefaultsKeys.authenticationProvider.rawValue) else {
+                self.setDefaultProviderKey()
+                return self.currentProvider
+            }
             return AuthenticationProvider(rawValue: value)
         }
-        set { UserDefaults.standard.set(newValue?.rawValue, forKey: UserDefaultsKeys.authenticationProvider.rawValue) }
+        set {
+            let value = newValue?.rawValue ?? ""
+            UserDefaults.standard.set(value, forKey: UserDefaultsKeys.authenticationProvider.rawValue)
+        }
+    }
+    
+    
+    /**
+     If a user is already signed in but the provider key is missing (e.g. because of earlier version), we need to deduct the provider by checking the login methods
+     */
+    private static func setDefaultProviderKey() {
+        if hasUser {
+            if userIsAuthenticated {
+                if authorizationKey != nil {
+                    currentProvider = .signInWithApple
+                } else {
+                    currentProvider = .emailPassword
+                }
+            } else {
+                currentProvider = .anonymous
+            }
+        } else {
+            currentProvider = nil
+        }
     }
 }
