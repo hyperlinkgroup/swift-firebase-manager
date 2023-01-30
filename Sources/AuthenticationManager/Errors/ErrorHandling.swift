@@ -32,6 +32,7 @@ extension AuthenticationManager {
                     if let error {
                         self.handleError(error, completion: completion)
                     } else {
+                        self.currentProvider = .signInWithApple
                         completion(nil)
                     }
                 }
