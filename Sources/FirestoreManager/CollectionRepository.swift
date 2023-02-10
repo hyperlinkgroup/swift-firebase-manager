@@ -54,8 +54,8 @@ open class CollectionRepository<T: Codable>: ObservableObject {
         }
     }
     
-    open func update(_ object: T, id: String) {
-        FirestoreManager.updateDocument(object, id: id, reference: ref) { result in
+    open func update(_ object: T, id: String, merge: Bool = false) {
+        FirestoreManager.updateDocument(object, id: id, reference: ref, merge: merge) { result in
             switch result {
             case .success:
                 print("Object updated \(self.getPath(id: id))!")
