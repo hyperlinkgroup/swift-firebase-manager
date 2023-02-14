@@ -13,14 +13,16 @@ extension FirestoreManager {
      Fetch a collection from Firebase.
      
      - Parameter reference: The collection name
-     - Parameter filters: Dictionary of the filter key and the value
+     - Parameter filters: Array of FirestoreFilter objects containing key, value and relational operator
+     - Parameter filterDict: Dictionary of the filter key and the value, checking for equal values
      - Parameter orderBy: Key to order objects by
      - Parameter descending: Whether orderBy key should descend. Default is false
      - Parameter limit: Limit number of fetched items
      - Parameter withListener: Whether a listener should be added to register any changes made to the collection. Default is true
      */
     public static func fetchCollection<T>(_ reference: ReferenceProtocol,
-                                          filters: [String: Any]? = nil,
+                                          filters: [FirestoreFilter]? = nil,
+                                          filterDict: [String: Any]? = nil,
                                           orderBy: [String]? = nil,
                                           descending: Bool = false,
                                           limit: Int? = nil,
@@ -30,7 +32,11 @@ extension FirestoreManager {
         do {
             var query: Query = try reference.reference()
             
-            filters?.forEach { filter, filterValue in
+            filters?.forEach {
+                query = $0.addFilter(query)
+            }
+            
+            filterDict?.forEach { filter, filterValue in
                 query = query.whereField(filter, isEqualTo: filterValue)
             }
             

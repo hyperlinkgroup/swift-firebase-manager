@@ -13,19 +13,21 @@ open class CollectionRepository<T: Codable>: ObservableObject {
     // MARK: - Variables
     
     public var objects = CurrentValueSubject<[T], Never>([])
-    public var filters: [String: Any]?
+    public var filters: [FirestoreFilter]?
+    public var filterDict: [String: Any]?
     public var order: [String]?
     public let ref: ReferenceProtocol
     
-    public init(reference: ReferenceProtocol, filters: [String: Any]? = nil, order: [String]? = nil) {
+    public init(reference: ReferenceProtocol, filters: [FirestoreFilter]? = nil, filterDict: [String: Any]? = nil, order: [String]? = nil) {
         self.ref = reference
         self.filters = filters
+        self.filterDict = filterDict
         self.order = order
     }
     
     
     open func fetchCollection(withListener: Bool) {
-        FirestoreManager.fetchCollection(ref, filters: filters, orderBy: order, withListener: withListener) { (result: Result<[T], FirestoreError>) in
+        FirestoreManager.fetchCollection(ref, filters: filters, filterDict: filterDict, orderBy: order, withListener: withListener) { (result: Result<[T], FirestoreError>) in
             switch result {
             case .success(let objects):
                 self.objects.send(objects)
