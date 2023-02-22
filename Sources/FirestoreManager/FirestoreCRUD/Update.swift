@@ -48,9 +48,10 @@ extension FirestoreManager {
             try reference.reference().document(id).setData(newValues, merge: true) { error in
                 if let error {
                     completion(.failure(.fail(error: error, action: .update, reference: reference, id: id)))
-                } else {
-                    completion(.success(id))
+                    return
                 }
+                
+                completion(.success(id))
             }
         } catch {
             completion(.failure(.incompleteReference(reference: reference)))

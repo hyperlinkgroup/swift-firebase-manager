@@ -31,10 +31,11 @@ extension AuthenticationManager {
                 auth.signIn(with: linkedCredential) { result, error in
                     if let error {
                         self.handleError(error, completion: completion)
-                    } else {
-                        self.currentProvider = .signInWithApple
-                        completion(nil)
+                        return
                     }
+                    
+                    self.currentProvider = .signInWithApple
+                    completion(nil)
                 }
             }
         default:

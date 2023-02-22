@@ -34,18 +34,19 @@ extension AuthenticationManager {
      If a user is already signed in but the provider key is missing (e.g. because of earlier version), we need to deduct the provider by checking the login methods
      */
     private static func setDefaultProviderKey() {
-        if hasUser {
-            if userIsAuthenticated {
-                if authorizationKey != nil {
-                    currentProvider = .signInWithApple
-                } else {
-                    currentProvider = .emailPassword
-                }
+        guard hasUser else {
+            currentProvider = nil
+            return
+        }
+         
+        if userIsAuthenticated {
+            if authorizationKey != nil {
+                currentProvider = .signInWithApple
             } else {
-                currentProvider = .anonymous
+                currentProvider = .emailPassword
             }
         } else {
-            currentProvider = nil
+            currentProvider = .anonymous
         }
     }
 }

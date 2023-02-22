@@ -19,6 +19,7 @@ open class FirebaseStorageManager {
             let taskReference = storageRef.putFile(from: localFile, metadata: nil) { metadata, error in
                 if let error {
                     promise(.failure(.upload(error: error)))
+                    return
                 }
                 promise(.success(true))
             }

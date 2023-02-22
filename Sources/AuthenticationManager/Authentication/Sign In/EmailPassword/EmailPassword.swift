@@ -19,11 +19,12 @@ extension AuthenticationManager {
         auth.createUser(withEmail: email, password: password) { _, error in
             if let error {
                 completion(AuthenticationError.firebase(error: error))
-            } else {
-                print("Welcome user with id \(userId ?? "")")
-                self.currentProvider = .emailPassword
-                completion(nil)
+                return
             }
+            
+            print("Welcome user with id \(userId ?? "")")
+            self.currentProvider = .emailPassword
+            completion(nil)
         }
     }
     
@@ -36,11 +37,12 @@ extension AuthenticationManager {
         auth.signIn(withEmail: email, password: password) { _, error in
             if let error {
                 completion(AuthenticationError.firebase(error: error))
-            } else {
-                print("Welcome user with id \(userId ?? "")")
-                self.currentProvider = .emailPassword
-                completion(nil)
+                return
             }
+            
+            print("Welcome user with id \(userId ?? "")")
+            self.currentProvider = .emailPassword
+            completion(nil)
         }
     }
     
@@ -109,7 +111,7 @@ extension AuthenticationManager {
         
         reauthenticateWithEmail(password: currentPassword) { error in
             currentUser.delete { error in
-                if let error = error {
+                if let error {
                     completion(AuthenticationError.firebase(error: error))
                     return
                 }

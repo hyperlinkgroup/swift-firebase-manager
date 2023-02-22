@@ -20,9 +20,10 @@ extension FirestoreManager {
             try reference.reference().document(id).delete { error in
                 if let error {
                     completion?(.fail(error: error, action: .delete, reference: reference, id: id))
-                } else {
-                    completion?(nil)
+                    return
                 }
+                
+                completion?(nil)
             }
         } catch {
             completion?(.incompleteReference(reference: reference))

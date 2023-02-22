@@ -61,9 +61,10 @@ open class CollectionRepository<T: Codable>: ObservableObject {
         FirestoreManager.deleteDocument(id: id, reference: ref) { error in
             if let error {
                 self.didReceiveError(error)
-            } else {
-                print("Object deleted \(self.getPath(id: id))!")
+                return
             }
+            
+            print("Object deleted \(self.getPath(id: id))!")
         }
     }
     
