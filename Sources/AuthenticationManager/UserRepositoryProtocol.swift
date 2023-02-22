@@ -52,10 +52,8 @@ extension UserRepositoryProtocol {
             AuthenticationManager.checkAuthorizationState { result in
                 proceed(result: result)
             }
-            
         case .emailPassword:
             proceed(result: AuthenticationManager.userIsAuthenticated ? .success(nil) : .failure(AuthenticationError.unknown))
-            
         case .anonymous:
             proceed(result: !AuthenticationManager.userIsAuthenticated ? .success(nil) : .failure(AuthenticationError.unknown))
         case .none:

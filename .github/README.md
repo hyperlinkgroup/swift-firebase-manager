@@ -208,7 +208,7 @@ AuthenticationManager.email = "john.doe@apple.com" // email is overwritten and c
 
 
 ##### Configuration
-By default the `AuthenticationManager` allows three authentication methods: Sign in with Email and Password, by using the Apple ID and anonymous login. If you want to restrict the providers, you can use a custom configuration object. With that the AuthenticationManager needs to be initialized on App Start.
+By default, the `AuthenticationManager` allows three authentication methods: Sign in with Email and Password, by using the Apple ID and anonymous login. If you want to restrict the providers, you can use a custom configuration object. With that, the AuthenticationManager needs to be initialized on App Start.
 
 You can also link a repository where you manage your users details. If you subclass the `UserRepositoryProtocol`your user's details with the user details you get during the authentication process.
 
@@ -284,7 +284,7 @@ AuthenticationManager.updatePassword(currentPassword: "123", newPassword: "456")
 
 ##### Authenticate by using Apple Id
 
-The Authentication Manager controls the whole authentication flow and returns you the handled error without any further work.
+The Authentication Manager controls the whole authentication flow and returns the handled error without any further work.
 
 ###### SwiftUI:
 

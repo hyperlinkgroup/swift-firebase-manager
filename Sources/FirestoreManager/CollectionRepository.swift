@@ -46,14 +46,6 @@ open class CollectionRepository<T: Codable>: ObservableObject {
         }
     }
     
-    private func getPath(id: String) -> String {
-        if let path = try? ref.reference().path {
-            return "/" + path + "/\(id)"
-        } else {
-            return "/\(id)"
-        }
-    }
-    
     open func update(_ object: T, id: String, merge: Bool = false) {
         FirestoreManager.updateDocument(object, id: id, reference: ref, merge: merge) { result in
             switch result {
@@ -76,4 +68,15 @@ open class CollectionRepository<T: Codable>: ObservableObject {
     }
     
     open func didReceiveError(_ error: Error) { }
+}
+
+
+extension CollectionRepository {
+    private func getPath(id: String) -> String {
+        if let path = try? ref.reference().path {
+            return "/" + path + "/\(id)"
+        } else {
+            return "/\(id)"
+        }
+    }
 }
