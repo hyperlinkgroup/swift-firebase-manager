@@ -11,13 +11,13 @@ open class AuthenticationManager: NSObject {
     static let auth = Auth.auth()
     static let providerId = "apple.com"
     
-    static var configuration = Configuration()
+    static var configuration = AuthenticationConfiguration()
     static var currentNonce = Nonce()
     
     /**
         Possibility to change custom settings. Not needed if standard settings are used.
      */
-    public static func setup(_ config: Configuration) {
+    public static func setup(_ config: AuthenticationConfiguration) {
         self.configuration = config
     }
 }

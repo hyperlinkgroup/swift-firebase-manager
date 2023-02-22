@@ -226,7 +226,7 @@ struct MyApp: App {
     init() {
         FirebaseApp.configure()
 
-        var authenticationConfiguration = Configuration()
+        var authenticationConfiguration = AuthenticationConfiguration()
         authenticationConfiguration.authProvider = [.signInWithApple, .anonymous, .emailPassword] 
         authenticationConfiguration.userRepository = MyRepository.shared
         AuthenticationManager.setup(authenticationConfiguration)
