@@ -56,7 +56,10 @@ extension AuthenticationManager {
 extension AuthenticationManager {
     
     enum UserDefaultsKeys: String {
-        case authorizationIdKey, userNameKey, emailKey
+        case authorizationIdKey,
+             authenticationProvider,
+             userNameKey,
+             emailKey
     }
     
     /**

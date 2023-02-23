@@ -186,7 +186,7 @@ Target for all authentication related operations.
 - [x] Authentication by Apple Id
 - [x] Error Handling
 - [x] Link Anonymous and authenticated Accounts
-- [ ] Authentication by Email and Password
+- [x] Authentication by Email and Password
 - [x] Sign out and Deleting an Account
 - [x] UIKit-View for handling SignInWithApple-Requests
 
@@ -208,7 +208,7 @@ AuthenticationManager.email = "john.doe@apple.com" // email is overwritten and c
 
 
 ##### Configuration
-By default the `AuthenticationManager` is using Sign In With Apple and allows also anonymous authentication. If you want to disable it, you can use a custom configuration object. With that the AuthenticationManager needs to be initialized on App Start.
+By default, the `AuthenticationManager` allows three authentication methods: Sign in with Email and Password, by using the Apple ID and anonymous login. If you want to restrict the providers, you can use a custom configuration object. With that, the AuthenticationManager needs to be initialized on App Start.
 
 You can also link a repository where you manage your users details. If you subclass the `UserRepositoryProtocol`your user's details with the user details you get during the authentication process.
 
@@ -227,7 +227,7 @@ struct MyApp: App {
         FirebaseApp.configure()
 
         var authenticationConfiguration = Configuration()
-        authenticationConfiguration.allowAnonymousUsers = false 
+        authenticationConfiguration.authProvider = [.signInWithApple, .anonymous, .emailPassword] 
         authenticationConfiguration.userRepository = MyRepository.shared
         AuthenticationManager.setup(authenticationConfiguration)
     }
@@ -245,7 +245,7 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
     FirebaseApp.configure()
 
     var authenticationConfiguration = Configuration()
-    authenticationConfiguration.allowAnonymousUsers = false 
+    authenticationConfiguration.authProvider = [.signInWithApple, .anonymous, .emailPassword]
     authenticationConfiguration.userRepository = MyRepository.shared
     AuthenticationManager.setup(authenticationConfiguration)
 
@@ -254,11 +254,40 @@ func application(_ application: UIApplication, didFinishLaunchingWithOptions lau
 ```
 
 
+##### Authenticate with Email and Password
+```Swift
+// Create Account
+AuthenticationManager.signUpWithEmail(email: "john.doe@apple.com", password: "123") { error in
+    if let error {
+        // Check detailed Error Response
+    } else {
+        // Account was created and User logged in successfully
+    }
+}
+
+// Login
+AuthenticationManager.loginWithEmail(email: "john.doe@apple.com", password: "123") { error in
+    if let error {
+        // Check detailed Error Response
+    } else {
+        // Authentication was successful
+    }
+}
+
+
+// Update User Information
+AuthenticationManager.resetPassword(for: "john.doe@apple.com")
+AuthenticationManager.updateMail(currentPassword: "123", newMail: "jane.doe@apple.com") { error in }
+AuthenticationManager.updatePassword(currentPassword: "123", newPassword: "456") { error in }
+```
+
+
 ##### Authenticate by using Apple Id
 
-The Authentication Manager controls the whole authentication flow and returns you the handled error without any further work.
+The Authentication Manager controls the whole authentication flow and returns the handled error without any further work.
 
 ###### SwiftUI:
+
 ```Swift
 import FirebaseAuthenticationManager
 import AuthenticationServices
@@ -391,11 +420,22 @@ AuthenticationManager.signOut { error in
 ##### Delete Account
 
 You can delete a user's account in Firebase.
-This can require a reauthentication before executing this method.
+This can require a reauthentication before executing this method which is done automatically for users who signed in with email and password.
 
 If your user signed in with its Apple-Account, this requires involving the UI to receive the status of authentication. We don't handle this error (yet), so we advise you to execute an additional login manually before accessing this function.
 
 ```Swift
+// Account is related to Email and Password
+AuthenticationManager.deleteAccount(currentPassword: "123") { error in 
+    if let error {
+        // Check detailed Error Response
+    } else {
+        // Deletion of Account was successful
+        // If you stored your user's data in a database, don't forget to implement deleting it separately.
+    }
+}
+
+// Account is related to Apple ID
 AuthenticationManager.deleteAccount { error in
     if let error {
         // Check detailed Error Response
@@ -443,7 +483,7 @@ class UserRepository: UserRepositoryProtocol {
 
 It is recommended to check a user's authorization status on app start, or possibly before sensitive transactions, since these could be changed outside of your app.
 
-You can simplify this Authorization-Flow by implementing the `UserRepositoryProtocol`. We provide two functions, choose the one you need according to your defined Authentication Providers.
+You can simplify this Authorization-Flow by implementing the `UserRepositoryProtocol`.
 
 If you stored your users details in a remote database, you might want to fetch it after the authorization was successful.
 For this you can implement the `fetchCurrentUser`-Method, which is executed automatically on successful authorization. 
@@ -453,21 +493,6 @@ class UserRepository: UserRepositoryProtocol {
 
     // Custom Function for checking Authorization -> can be called anywhere in your app where you need it
     func checkAuthState() {
-        // Depending on your Authentication Provider choose
-
-        // (a) if you support anonymous users
-        self.checkAuthorizationWithAnonymousUser { error in
-            if let error {
-                // Handle Error
-
-                // We recommend signing out
-                AuthenticationManager.signOut { _ in }
-            }
-
-            // if no error occured fetchCurrentUser() is called automatically
-        }
-
-        // (b) if you support only Sign In With Apple
         self.checkAuthorization { error in
             if let error {
                 // Handle Error

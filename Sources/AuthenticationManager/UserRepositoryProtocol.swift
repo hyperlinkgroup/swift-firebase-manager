@@ -37,31 +37,35 @@ extension UserRepositoryProtocol {
     // MARK: - Authorization
     
     /**
-     Call this method if you support Sign In With Apple to check a user's authorization status on app start, or possibly before sensitive transactions, since these could be changed outside of your app.
+     Call this method to check a user's authorization status on app start, or possibly before sensitive transactions, since these could be changed outside of your app.
      */
     public func checkAuthorization(completion: @escaping (Error?) -> Void) {
-        AuthenticationManager.checkAuthorizationState { result in
+        guard
+            AuthenticationManager.hasUser else {
+            completion(nil)
+            return
+        }
+        
+        
+        switch AuthenticationManager.currentProvider {
+        case .signInWithApple:
+            AuthenticationManager.checkAuthorizationState { result in
+                proceed(result: result)
+            }
+        case .emailPassword:
+            proceed(result: AuthenticationManager.userIsAuthenticated ? .success(nil) : .failure(AuthenticationError.unknown))
+        case .anonymous:
+            proceed(result: !AuthenticationManager.userIsAuthenticated ? .success(nil) : .failure(AuthenticationError.unknown))
+        case .none:
+            proceed(result: .failure(AuthorizationError.providerId))
+        }
+        
+        func proceed(result: Result<Bool?, Error>) {
             switch result {
             case .success:
                 fetchCurrentUser()
                 completion(nil)
             case .failure(let error):
-                completion(error)
-            }
-        }
-    }
-    
-    /**
-     Call this method if you support Sign In With Apple or Anonymous Login to check a user's authorization status on app start, or possibly before sensitive transactions, since these could be changed outside of your app.
-     */
-    public func checkAuthorizationWithAnonymousUser(completion: @escaping (Error?) -> Void) {
-        if AuthenticationManager.userIsAuthenticated {
-            self.checkAuthorization(completion: completion)
-        } else {
-            AuthenticationManager.authenticateAnonymously { error in
-                if error != nil {
-                    fetchCurrentUser()
-                }
                 completion(error)
             }
         }

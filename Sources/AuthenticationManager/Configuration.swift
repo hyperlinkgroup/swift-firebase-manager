@@ -8,8 +8,8 @@
 import Foundation
 
 public struct Configuration {
-    public var allowAnonymousUsers = true
     public var userRepository: UserRepositoryProtocol? = nil
+    public var authProvider: [AuthenticationProvider] = [.signInWithApple, .anonymous, .emailPassword]
     
     public init() { }
 }

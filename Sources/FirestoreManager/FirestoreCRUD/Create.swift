@@ -59,9 +59,10 @@ extension FirestoreManager {
         batch.commit { error in
             if let error {
                 completion(.fail(error: error, action: .batchCreate, reference: reference, id: nil))
-            } else {
-                completion(nil)
+                return
             }
+            
+            completion(nil)
         }
     }
 }
