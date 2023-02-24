@@ -27,6 +27,7 @@ extension FirestoreManager {
                                           descending: Bool = false,
                                           limit: Int? = nil,
                                           withListener: Bool = true,
+                                          listenerName: String? = nil,
                                           completion: @escaping (Result<[T], FirestoreError>) -> Void) where T: Decodable {
         
         do {
@@ -67,7 +68,7 @@ extension FirestoreManager {
             if withListener {
                 DispatchQueue.main.async {
                     let listener = query.addSnapshotListener(snapshotBlock)
-                    self.snapshotListeners[reference.rawValue] =  listener
+                    self.snapshotListeners[listenerName ?? reference.rawValue] =  listener
                 }
             } else {
                 query.getDocuments(completion: snapshotBlock)
