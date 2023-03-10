@@ -16,15 +16,17 @@ open class CollectionRepository<T: Codable>: ObservableObject {
     public var filters: [FirestoreFilter]?
     public var filterDict: [String: Any]?
     public var order: [String]?
+    public var descending = false
     public let ref: ReferenceProtocol
     
     private let snapShotListenerReference: String
 
-    public init(reference: ReferenceProtocol, filters: [FirestoreFilter]? = nil, filterDict: [String: Any]? = nil, order: [String]? = nil) {
+    public init(reference: ReferenceProtocol, filters: [FirestoreFilter]? = nil, filterDict: [String: Any]? = nil, order: [String]? = nil, descending: Bool = false) {
         self.ref = reference
         self.filters = filters
         self.filterDict = filterDict
         self.order = order
+        self.descending = descending
         
         snapShotListenerReference = filters?.reduce(reference.rawValue) { partialResult, filter in
             partialResult + filter.key + String(describing: filter.value)
@@ -33,7 +35,7 @@ open class CollectionRepository<T: Codable>: ObservableObject {
     
     
     open func fetchCollection(withListener: Bool) {
-        FirestoreManager.fetchCollection(ref, filters: filters, filterDict: filterDict, orderBy: order, withListener: withListener, listenerName: snapShotListenerReference) { (result: Result<[T], FirestoreError>) in
+        FirestoreManager.fetchCollection(ref, filters: filters, filterDict: filterDict, orderBy: order, descending: descending, withListener: withListener, listenerName: snapShotListenerReference) { (result: Result<[T], FirestoreError>) in
             switch result {
             case .success(let objects):
                 self.objects.send(objects)
