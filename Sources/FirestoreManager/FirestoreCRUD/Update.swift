@@ -42,10 +42,11 @@ extension FirestoreManager {
     public static func updateData(id: String,
                                   reference: ReferenceProtocol,
                                   newValues: [String: Any],
+                                  merge: Bool = true,
                                   completion: @escaping(Result<String, FirestoreError>) -> Void) {
         
         do {
-            try reference.reference().document(id).setData(newValues, merge: true) { error in
+            try reference.reference().document(id).setData(newValues, merge: merge) { error in
                 if let error {
                     completion(.failure(.fail(error: error, action: .update, reference: reference, id: id)))
                 } else {

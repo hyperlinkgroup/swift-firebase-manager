@@ -30,15 +30,23 @@ extension FirestoreManager {
     }
     
     /**
-     Delete a field of an object.
+     Delete fields of an object.
+     Because nil-values cannot be set during an update, these fields need to be deleted separately
      
-     - Parameter id:
+     - Parameter id:Document ID
+     - Parameter reference: The collection name
+     - Parameter fields: Array of field names
      */
     
-    public static func deleteField(id: String, reference: ReferenceProtocol, field: String, completion: @escaping((FirestoreError?) -> Void)) {
+    public static func deleteFields(id: String, reference: ReferenceProtocol, fields: [String], completion: @escaping((FirestoreError?) -> Void)) {
+        
+        let data = fields.reduce(into: [String: Any]()) {
+            $0[$1] = FieldValue.delete()
+        }
+        
         do {
             try reference.reference().document(id)
-                .updateData([field: FieldValue.delete()]) { error in
+                .updateData(data) { error in
                     var firestoreError: FirestoreError?
                     if let error {
                         firestoreError = .fail(error: error, action: .update, reference: reference, id: id)
