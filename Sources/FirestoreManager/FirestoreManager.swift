@@ -11,13 +11,13 @@ import FirebaseFirestoreSwift
 
 open class FirestoreManager {
     
-    static var database: Firestore = {
+    public static var database: Firestore = {
         guard let emulatorPort else {
             return Firestore.firestore()
         }
         let settings = Firestore.firestore().settings
         settings.host = "localhost:\(emulatorPort)"
-        settings.isPersistenceEnabled = false
+        settings.cacheSettings = MemoryCacheSettings()
         settings.isSSLEnabled = false
         Firestore.firestore().settings = settings
         
@@ -30,7 +30,6 @@ open class FirestoreManager {
     
     public static func setup(emulatorPort: Int? = nil) {
         FirebaseApp.configure()
-        
         self.emulatorPort = emulatorPort
     }
     

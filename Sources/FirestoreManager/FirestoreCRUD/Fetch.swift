@@ -54,15 +54,31 @@ extension FirestoreManager {
                     completion(.failure(FirestoreError.fail(error: error, action: .read, reference: reference, id: nil)))
                     return
                 }
-                do {
-                    let objects = try documents.map { queryDocumentSnapshot -> T in
-                        try queryDocumentSnapshot.data(as: T.self)
+                
+                var errors = [FirestoreError]()
+                let objects = documents.compactMap { queryDocumentSnapshot -> T? in
+                    do {
+                        return try queryDocumentSnapshot.data(as: T.self)
+                    } catch {
+                        errors.append(FirestoreError.decoding(error: error))
+                        return nil
                     }
-                    
-                    completion(.success(objects))
-                } catch {
-                    completion(.failure(FirestoreError.decoding(error: error)))
                 }
+                
+                guard !objects.isEmpty else {
+                    completion(.failure(errors.first ?? FirestoreError.decoding(error: nil)))
+                    return
+                }
+                
+                if objects.count != documents.count {
+                    let documentIds = documents.map { $0.documentID }
+                    let objectIds = objects.compactMap { ($0 as? (any Identifiable))?.id as? String }
+                    let missingIds = documentIds.filter { !objectIds.contains($0) }
+                    
+                    print("Could not parse document(s):", missingIds.joined(separator: ","))
+                }
+                
+                completion(.success(objects))
             }
             
             if withListener {

@@ -14,7 +14,7 @@ public enum FirestoreAction: String {
 
 public enum FirestoreError: LocalizedError, CustomNSError {
     case fail(error: Error?, action: FirestoreAction, reference: ReferenceProtocol, id: String?)
-    case decoding(error: Error)
+    case decoding(error: Error?)
     case incompleteReference(reference: ReferenceProtocol)
     
     public var errorDescription: String? {
@@ -38,7 +38,7 @@ public enum FirestoreError: LocalizedError, CustomNSError {
     public var failureReason: String? {
         switch self {
         case .fail(let error, _, _, let id): return error?.localizedDescription ?? "Document \(id ?? "") not found"
-        case .decoding(let error): return error.localizedDescription
+        case .decoding(let error): return error?.localizedDescription
         case .incompleteReference(let reference): return "\(reference.rawValue) not found"
         }
     }
