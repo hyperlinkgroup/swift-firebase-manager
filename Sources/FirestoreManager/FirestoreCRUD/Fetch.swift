@@ -65,8 +65,8 @@ extension FirestoreManager {
                     }
                 }
                 
-                guard !objects.isEmpty else {
-                    completion(.failure(errors.first ?? FirestoreError.decoding(error: nil)))
+                if let error = errors.first, objects.isEmpty {
+                    completion(.failure(error))
                     return
                 }
                 
