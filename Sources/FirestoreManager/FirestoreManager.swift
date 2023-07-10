@@ -27,6 +27,7 @@ open class FirestoreManager {
     private static var emulatorPort: Int?
     
     static var snapshotListeners = [String: ListenerRegistration]()
+    static var queryCursors = [String: [DocumentSnapshot]]()
     
     public static func setup(emulatorPort: Int? = nil) {
         FirebaseApp.configure()

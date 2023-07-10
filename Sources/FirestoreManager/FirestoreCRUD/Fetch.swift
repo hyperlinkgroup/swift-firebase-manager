@@ -9,6 +9,7 @@ import Foundation
 import FirebaseFirestore
 
 extension FirestoreManager {
+    
     /**
      Fetch a collection from Firebase.
      
@@ -32,6 +33,7 @@ extension FirestoreManager {
         
         do {
             var query: Query = try reference.reference()
+            lazy var queryRef = listenerName ?? reference.rawValue
             
             filters?.forEach {
                 query = $0.addFilter(query)
@@ -47,13 +49,20 @@ extension FirestoreManager {
             
             if let limit {
                 query = query.limit(to: limit)
+                
+                if let queryCursor = self.queryCursors[queryRef]?.last {
+                    query = query.start(afterDocument: queryCursor)
+                }
             }
+            
             
             let snapshotBlock = { (querySnapshot: QuerySnapshot?, error: Error?) in
                 guard let documents = querySnapshot?.documents else {
                     completion(.failure(FirestoreError.fail(error: error, action: .read, reference: reference, id: nil)))
                     return
                 }
+                
+                self.queryCursors[queryRef] = documents
                 
                 var errors = [FirestoreError]()
                 let objects = documents.compactMap { queryDocumentSnapshot -> T? in
@@ -84,7 +93,7 @@ extension FirestoreManager {
             if withListener {
                 DispatchQueue.main.async {
                     let listener = query.addSnapshotListener(snapshotBlock)
-                    self.snapshotListeners[listenerName ?? reference.rawValue] =  listener
+                    self.snapshotListeners[queryRef] =  listener
                 }
             } else {
                 query.getDocuments(completion: snapshotBlock)
